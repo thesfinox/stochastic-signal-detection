@@ -1,3 +1,6 @@
+# Artifact files
+*.mp4
+
 # VSCode
 .vscode/
 
