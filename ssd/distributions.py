@@ -4,12 +4,236 @@ Probability Density Functions
 
 A collection of probability density functions
 """
-from typing import Callable, Iterable, Optional, Union
+from typing import Callable, Iterable, Optional, Tuple, Union
+from scipy.interpolate import splev, splrep
 
 import numpy as np
 from scipy.stats import gaussian_kde
 
 from .base import BaseDistribution
+
+
+class HistogramDistribution(BaseDistribution):
+    """Use a histogram to estimate a probability density function."""
+
+    def __init__(self, nbins: int = 100):
+        """
+        Parameters
+        ----------
+        nbins : int, optional
+            The number of bins to use in the histogram (default is 100)
+        """
+        super().__init__()
+
+        # Set the number of bins
+        self.nbins = nbins
+
+    def fit(self, data: Iterable[float]) -> 'HistogramDistribution':
+        """
+        Parameters
+        ----------
+        data : array_like
+            The data to fit
+
+        Returns
+        -------
+        HistogramDistribution
+            The fitted histogram distribution
+        """
+        # Fit the histogram distribution
+        self._hist, self._bins = np.histogram(data, bins=self.nbins, density=True)
+
+        # Set the fitted status
+        self.fitted = True
+
+        return self
+
+    def __call__(self, x: float) -> float:
+        """
+        Parameters
+        ----------
+        x : float
+            The point at which to evaluate the probability density function
+
+        Returns
+        -------
+        float
+            The value of the probability density function at the given point
+
+        Raises
+        ------
+        RuntimeError
+            If the histogram distribution has not been fitted
+        """
+        if not self.fitted:
+            raise RuntimeError(
+                'The histogram distribution must be fitted before it can be evaluated. Call self.fit(data) to fit the histogram distribution.'
+            )
+
+        if (x < self._bins[0]) or (x > self._bins[-2]):
+            return 0
+
+        # Find the bin that contains the point
+        idx = np.digitize(x, self._bins)
+
+        return self._hist[idx]
+
+    def integrate(self,
+                  a: float = -np.inf,
+                  b: float = np.inf,
+                  moment: float = 1) -> Tuple[float, float]:
+        """
+        Integrate the probability density function from a to b.
+
+        Parameters
+        ----------
+        a : float, optional
+            The lower bound of the integration (default is -inf)
+        b : float, optional
+            The upper bound of the integration (default is inf)
+        moment : float, optional
+            The moment to compute (default is 0)
+
+        Returns
+        -------
+        Tuple[float, float]
+            The value of the integral and the error
+        """
+        if not self.fitted:
+            raise RuntimeError(
+                'The histogram distribution must be fitted before it can be integrated. Call self.fit(data) to fit the histogram distribution.'
+            )
+
+        # Find the bins that contain the integration bounds
+        idx_a = np.digitize(a, self._bins)
+        idx_b = np.digitize(b, self._bins)
+
+        # Get the bin_width
+        bin_width = np.diff(self._bins)[0]
+
+        # Compute the integral
+        integral = np.sum(self._hist[idx_a:idx_b]**moment * bin_width)
+
+        # Compute the error
+        error = np.sqrt(np.sum(self._hist[idx_a:idx_b]**moment * bin_width)**2)
+
+        return integral, error
+
+    def grad(self, x: float) -> float:
+        """
+        Compute the derivative of the probability density function at a given point.
+
+        Parameters
+        ----------
+        x : float
+            The point at which to compute the derivative
+
+        Returns
+        -------
+        float
+            The value of the derivative at the given point
+        """
+        if not self.fitted:
+            raise RuntimeError(
+                'The histogram distribution must be fitted before it can be differentiated. Call self.fit(data) to fit the histogram distribution.'
+            )
+
+        if (x < self._bins[0]) or (x >= self._bins[-1]):
+            return 0
+
+        # Find the bin that contains the point
+        idx = np.digitize(x, self._bins) - 1
+
+        # Get the bin_width
+        bin_width = np.diff(self._bins)[0]
+
+        # Compute the derivative
+        def yy(idx: int) -> float:
+            if idx > len(self._hist) - 1:
+                return 0
+            else:
+                return self._hist[idx]
+
+        dy = (yy(idx + 1) - yy(idx - 1)) / (2*bin_width)
+
+        return dy
+
+
+class InterpolateDistribution(BaseDistribution):
+    """Use a histogram distribution with interpolated values to estimate a probability density function."""
+
+    def __init__(self, nbins: int = 100):
+        """
+        Parameters
+        ----------
+        nbins : int, optional
+            The number of bins to use in the histogram (default is 100)
+        """
+        super().__init__()
+
+        # Set the number of bins
+        self.nbins = nbins
+
+    def fit(self, data: Iterable[float], n: int = 1, s: float = 0.01) -> 'InterpolateDistribution':
+        """
+        Parameters
+        ----------
+        data : array_like
+            The data to fit
+        n : int, optional
+            The degree of the interpolating polynomial (default is 1)
+        s : float, optional
+            The smoothing factor (default is 0.01)
+
+        Returns
+        -------
+        HistogramDistribution
+            The fitted histogram distribution
+        """
+        # Fit the histogram distribution
+        self._hist, self._bins = np.histogram(data, bins=self.nbins, density=True)
+
+        # Interpolate
+        dx = np.diff(self._bins)[0]
+        X = self._bins[:-1] + dx/2
+        Y = self._hist
+
+        self._spl = splrep(X, Y, k=n, s=s, per=False)
+
+        # Set the fitted status
+        self.fitted = True
+
+        return self
+
+    def __call__(self, x: float) -> float:
+        """
+        Use the values of nearby bins to interpolate the probability density function at a given point.
+
+        Parameters
+        ----------
+        x : float
+            The point at which to evaluate the probability density function
+
+        Returns
+        -------
+        float
+            The value of the probability density function at the given point
+
+        Raises
+        ------
+        RuntimeError
+            If the histogram distribution has not been fitted
+        """
+        if not self.fitted:
+            raise RuntimeError(
+                'The histogram distribution must be fitted before it can be evaluated. Call self.fit(data) to fit the histogram distribution.'
+            )
+
+        if (x < self._bins[0]) or (x >= self._bins[-1]):
+            return 0
+
+        return float(splev(x, self._spl))
+
 
 
 class EmpiricalDistribution(BaseDistribution):
@@ -19,8 +243,6 @@ class EmpiricalDistribution(BaseDistribution):
                  bw_method: Optional[Union[str, float, Callable]] = None,
                  weights: Optional[Iterable[float]] = None):
         """
-        Estimate an empirical distribution using a Gaussian KDE.
-
         Parameters
         ----------
         bw_method : str, float, or callable, optional
@@ -41,8 +263,6 @@ class EmpiricalDistribution(BaseDistribution):
 
     def fit(self, data: Iterable[float]) -> 'EmpiricalDistribution':
         """
-        Fit the empirical distribution to the given data.
-
         Parameters
         ----------
         data : array_like
@@ -65,8 +285,6 @@ class EmpiricalDistribution(BaseDistribution):
 
     def __call__(self, x: float) -> float:
         """
-        Evaluate the probability density function at a given point.
-
         Parameters
         ----------
         x : float
@@ -76,6 +294,11 @@ class EmpiricalDistribution(BaseDistribution):
         -------
         float
             The value of the probability density function at the given point
+
+        Raises
+        ------
+        RuntimeError
+            If the empirical distribution has not been fitted
         """
         if not self.fitted:
             raise RuntimeError(

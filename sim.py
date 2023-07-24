@@ -6,70 +6,90 @@ Perform a simulation of the evolution of a stochastic field.
 """
 import sys
 import argparse
+import numpy as np
 from pde import MemoryStorage, PDEBase, ScalarField, CartesianGrid, plot_kymograph, PlotTracker, PDE
 from pde.grids.boundaries.axes import BoundariesData
 from pde.pdes.base import expr_prod
 from pde.visualization.movies import movie
+from ssd.base import BaseDistribution
+from ssd.distributions import TranslatedInverseMarchenkoPastur
 from scipy import constants as C
-
-
 
 __author__ = 'Riccardo Finotello'
 __email__ = 'riccardo.finotello@cea.fr'
 __description__ = 'Perform a simulation of the evolution of a stochastic field'
 __epilog__ = 'For bug reports and info: ' + __author__ + ' <' + __email__ + '>'
 
+
 class SSD(PDEBase):
     """Stochastic Signal Detection (SSD)"""
 
-    def __init__(self, k: float, noise: float = 0.0, bc: BoundariesData = 'auto_periodic_neumann'):
+    def __init__(self,
+                 dist: BaseDistribution,
+                 k2: float,
+                 noise: float = 0.0,
+                 bc: BoundariesData = 'auto_periodic_neumann'):
         """
         Parameters
         ----------
-        k : float
-            Renormalization scale
+        dist : BaseDistribution
+            Distribution of the signal
+        k2 : float
+            Renormalization scale (``k^2``)
         noise : float
             Noise intensity (default is 0.0)
         bc : BoundariesData
             Boundary conditions (default is 'auto_periodic_neumann')
         """
         super().__init__(noise=noise)
-        self.k = k
+        self.dist = dist
+        self.k2 = k2
         self.bc = bc
 
     @property
     def expression(self) -> str:
-        return f'-dim(f) * f + dim(x) * d_dx(f) - 2 * (3 d_dx(f) + 2 * x * laplace(f)) / (1 + f + 2 * x * laplace(f)**2)**2'
+        """Return the expression for the PDE"""
+        block = "χ * d_dχ(U')"
+        mu2 = f"U' + 2 * {block}"
+
+        part_1 = "-dim(U') * U'"
+        part_2 = f"dim(χ) * {block}"
+
+        num = "3 * d_dχ(U') + 2 * χ * d_dχ(d_dχ(U'))"
+        den = f"(1 + ({mu2})**2)**2"
+
+        return f"{part_1} + {part_2} - 2 * ({num}) / ({den})"
 
     def evolution_rate(self, state: ScalarField, t: float = 0) -> ScalarField:
 
-        #TODO compute the correct values of the coefficients
-        dim_f = 3e-1
-        dim_x = 2e-1
+        Chi = state.grid.axes_coords[0]
+        Uprime = state
 
-        # Parse the state
-        x = state.grid.axes_coords[0]
-        f = state
-        grad_f = state.gradient(bc=self.bc)[0]
-        lapl_f = state.laplace(bc=self.bc)
+        integral = self.dist.integrate(0, self.k2)[0]
+        grad = self.dist.grad(self.k2)
+        value = self.dist(self.k2)
 
-        # Compute each factor
-        fac_1 = -dim_f * f
-        fac_2 = dim_x * grad_f
+        dimUprime = integral / self.k2 / value
 
-        # Compute the fraction
-        num = 3 * grad_f + 2 * x * grad_f
-        den = (1 + f + 2 * x * lapl_f**2)**2
-        fac_3 = -2 * num / den
+        dimChi_1 = integral / self.k2 / value
+        dimChi_2 = grad * integral / np.sqrt(self.k2) / value**2
+        dimChi = 2 - 2 * dimChi_1 - dimChi_2 / 2
 
-        # Assemble the result
-        result = fac_1 + fac_2 + fac_3
+        block = Chi * Uprime.gradient(bc=self.bc)[0]
+        mu2 = Uprime + 2*block
+
+        part_1 = -dimUprime * Uprime
+        part_2 = dimChi * block
+
+        num_1 = Uprime.gradient(bc=self.bc)[0]
+        num_2 = Chi * Uprime.gradient(bc=self.bc)[0].gradient(bc=self.bc)[0]
+        num = 3 * num_1 + 2 * num_2
+        den = (1 + mu2**2)**2
+
+        result = part_1 + part_2 - 2*num/den
         result.label = 'stochastic evolution'
 
         return result
-
-
-
 
 
 def main(args):
@@ -82,36 +102,35 @@ def main(args):
 
     # Initialize a storage
     storage = MemoryStorage()
-    trackers = ['progress',
-                'steady_state',
-                storage.tracker(interval=1),
-                PlotTracker(show=True)
-                ]
+    trackers = [
+        'progress',
+        'steady_state',
+        storage.tracker(interval=1),
+        PlotTracker(show=True)
+    ]
 
     # Define the PDE and solve
-    # eq = SSD(k=1.0, noise=0.0, bc=bc)
-    eq = PDE({'f': f'-0.01 * f + 0.01 * d_dx(f) - 2 * (3 * d_dx(f) + 2 * x * laplace(f)) / (1 + f + 2 * x * laplace(f)**2)**2'})
-    eq.solve(state, t_range=1000, dt=0.01, tracker=trackers)
+    dist = TranslatedInverseMarchenkoPastur(L=0.25, sigma=1.5)
+    eq = SSD(dist=dist, k2=1.1, noise=0.0, bc=bc)
+    eq.solve(state, t_range=100, dt=0.01, tracker=trackers)
 
-    movie(storage,
-          'ssd.mp4',
-          show_time=True,
-          plot_args={
-
-          },
-          movie_args={'framerate': 10})
+    movie(storage, 'ssd.mp4', show_time=True, movie_args={'framerate': 10})
 
     return 0
 
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description=__description__, epilog=__epilog__)
+    parser = argparse.ArgumentParser(description=__description__,
+                                     epilog=__epilog__)
     parser.add_argument('--debug', action='store_true', help='Debug mode')
-    parser.add_argument('-v', dest='verb', action='count', default=0, help='Verbosity level')
+    parser.add_argument('-v',
+                        dest='verb',
+                        action='count',
+                        default=0,
+                        help='Verbosity level')
     args = parser.parse_args()
 
     code = main(args)
-
 
     sys.exit(code)

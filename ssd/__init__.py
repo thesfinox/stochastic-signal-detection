@@ -7,6 +7,8 @@ A Python package for the detection of signals using stochastic processes
 
 # Import modules
 from .distributions import (EmpiricalDistribution,
+                            HistogramDistribution,
+                            InterpolateDistribution,
                             InverseMarchenkoPastur,
                             InverseWignerSemicircle,
                             MarchenkoPastur,
@@ -39,5 +41,7 @@ __all__ = [
     'TranslatedInverseMarchenkoPastur',
     'TranslatedMarchenkoPastur',
     'WignerSemicircle',
-    'InverseWignerSemicircle'
+    'InverseWignerSemicircle',
+    'HistogramDistribution',
+    'InterpolateDistribution',
 ]
