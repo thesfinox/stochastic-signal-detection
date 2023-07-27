@@ -4,16 +4,17 @@ Stochastic Signal Detection (SSD)
 
 Perform a simulation of the evolution of a stochastic field.
 """
-import sys
 import argparse
+import sys
+
 import numpy as np
-from pde import MemoryStorage, PDEBase, ScalarField, CartesianGrid, plot_kymograph, PlotTracker, PDE
+from pde import CartesianGrid, MemoryStorage, PDEBase, PlotTracker, ScalarField
 from pde.grids.boundaries.axes import BoundariesData
-from pde.pdes.base import expr_prod
 from pde.visualization.movies import movie
+from scipy import constants as C
+
 from ssd.base import BaseDistribution
 from ssd.distributions import TranslatedInverseMarchenkoPastur
-from scipy import constants as C
 
 __author__ = 'Riccardo Finotello'
 __email__ = 'riccardo.finotello@cea.fr'
@@ -73,7 +74,7 @@ class SSD(PDEBase):
 
         dimChi_1 = integral / self.k2 / value
         dimChi_2 = grad * integral / np.sqrt(self.k2) / value**2
-        dimChi = 2 - 2 * dimChi_1 - dimChi_2 / 2
+        dimChi = 2 - 2*dimChi_1 - dimChi_2/2
 
         block = Chi * Uprime.gradient(bc=self.bc)[0]
         mu2 = Uprime + 2*block
@@ -83,7 +84,7 @@ class SSD(PDEBase):
 
         num_1 = Uprime.gradient(bc=self.bc)[0]
         num_2 = Chi * Uprime.gradient(bc=self.bc)[0].gradient(bc=self.bc)[0]
-        num = 3 * num_1 + 2 * num_2
+        num = 3*num_1 + 2*num_2
         den = (1 + mu2**2)**2
 
         result = part_1 + part_2 - 2*num/den
