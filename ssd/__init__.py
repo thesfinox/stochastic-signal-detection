@@ -15,6 +15,7 @@ from .distributions import (EmpiricalDistribution,
                             TranslatedInverseMarchenkoPastur,
                             TranslatedMarchenkoPastur,
                             WignerSemicircle)
+from .pde import SSD
 
 # Set the version number
 __version__ = '0.1.0'
@@ -44,4 +45,5 @@ __all__ = [
     'InverseWignerSemicircle',
     'HistogramDistribution',
     'InterpolateDistribution',
+    'SSD',
 ]

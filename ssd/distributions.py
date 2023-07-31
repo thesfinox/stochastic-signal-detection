@@ -5,9 +5,9 @@ Probability Density Functions
 A collection of probability density functions
 """
 from typing import Callable, Iterable, Optional, Tuple, Union
-from scipy.interpolate import splev, splrep
 
 import numpy as np
+from scipy.interpolate import splev, splrep
 from scipy.stats import gaussian_kde
 
 from .base import BaseDistribution
@@ -174,7 +174,12 @@ class InterpolateDistribution(BaseDistribution):
         # Set the number of bins
         self.nbins = nbins
 
-    def fit(self, data: Iterable[float], n: int = 1, s: float = 0.01) -> 'InterpolateDistribution':
+    def fit(
+        self,
+        data: Iterable[float],
+        n: int = 1,
+        s: float = 0.01,
+    ) -> 'InterpolateDistribution':
         """
         Parameters
         ----------
@@ -233,7 +238,6 @@ class InterpolateDistribution(BaseDistribution):
             return 0
 
         return float(splev(x, self._spl))
-
 
 
 class EmpiricalDistribution(BaseDistribution):
@@ -491,7 +495,7 @@ class TranslatedMarchenkoPastur(MarchenkoPastur):
         float
             The value of the probability density function at the given point
         """
-        return super().__call__(x + self.lm)
+        return super().__call__(x + self.l0)
 
     @property
     def max(self) -> float:
@@ -523,11 +527,14 @@ class InverseMarchenkoPastur(MarchenkoPastur):
         float
             The value of the probability density function at the given point
         """
+        if q <= self.min or q >= self.max:
+            return 0.0
+        self.lm = 0.0
         return super().__call__(1.0 / q) / q**2
 
     @property
     def max(self) -> float:
-        return 1 / self.lm  # maximum value of the function
+        return np.inf  # maximum value of the function
 
     @property
     def min(self) -> float:
@@ -551,11 +558,11 @@ class TranslatedInverseMarchenkoPastur(InverseMarchenkoPastur):
         float
             The value of the probability density function at the given point
         """
-        return super().__call__(q + 1 / self.lp)
+        return super().__call__(q + self.m2)
 
     @property
     def max(self) -> float:
-        return 1 / self.lm - 1 / self.lp  # maximum value of the function
+        return np.inf  # maximum value of the function
 
     @property
     def min(self) -> float:
