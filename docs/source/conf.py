@@ -32,7 +32,8 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.githubpages",
     "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode"
+    "sphinx.ext.viewcode",
+    "nbsphinx",
 ]
 
 # Autoclass settings

@@ -5,11 +5,19 @@
 
 .. include:: intro.rst
 
+.. include:: requirements.rst
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents
 
    intro
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+
+   tutorials/sim_analytical_tuto
 
 .. toctree::
    :maxdepth: 2

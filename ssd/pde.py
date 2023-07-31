@@ -40,11 +40,31 @@ class SSD(PDEBase):
 
     @property
     def expression(self) -> str:
-        """Return the expression for the PDE"""
-        return r"\dot{\overline{\mathcal{U_k^\prime}}}[\overline{\chi}] = - \mathrm{dim}_{\tau}(\overline{\mathcal{U_k^\prime}})\, \overline{\mathcal{U_k^\prime}}[\overline{\chi}] + \mathrm{dim}_{\tau}(\chi)\, \overline{\chi}\, \overline{\mathcal{U_k^{\prime\prime}}}[\overline{\chi}] -2 \frac{3\, \overline{\mathcal{U_k^{\prime\prime}}}[\overline{\chi}] + 2\, \overline{\chi}\, \overline{\mathcal{U_k^{\prime\prime\prime}}}[\overline{\chi}]}{(1 + \overline{\mu}^2)^2}"
+        """
+        Return the expression for the PDE.
+
+        .. math::
+
+            \\dot{\\bar{\\mathcal{U_k^\\prime}}}[\\bar{\\chi}] = - \\mathrm{dim}_{\\tau}(\\bar{\\mathcal{U_k^\\prime}})\\, \\bar{\\mathcal{U_k^\\prime}}[\\bar{\\chi}] + \\mathrm{dim}_{\\tau}(\\chi)\\, \\bar{\\chi}\\, \\bar{\\mathcal{U_k^{\\prime\\prime}}}[\\bar{\\chi}] -2 \\frac{3\\, \\bar{\\mathcal{U_k^{\\prime\\prime}}}[\\bar{\\chi}] + 2\\, \\bar{\\chi}\\, \\bar{\\mathcal{U_k^{\\prime\\prime\\prime}}}[\\bar{\\chi}]}{(1 + \\bar{\\mu}^2)^2}
+        """
+        return r"\dot{\bar{\mathcal{U_k^\prime}}}[\bar{\chi}] = - \mathrm{dim}_{\tau}(\bar{\mathcal{U_k^\prime}})\, \bar{\mathcal{U_k^\prime}}[\bar{\chi}] + \mathrm{dim}_{\tau}(\chi)\, \bar{\chi}\, \bar{\mathcal{U_k^{\prime\prime}}}[\bar{\chi}] -2 \frac{3\, \bar{\mathcal{U_k^{\prime\prime}}}[\bar{\chi}] + 2\, \bar{\chi}\, \bar{\mathcal{U_k^{\prime\prime\prime}}}[\bar{\chi}]}{(1 + \bar{\mu}^2)^2}"
 
     def evolution_rate(self, state: ScalarField, t: float = 0) -> ScalarField:
+        """
+        Compute the evolution rate of the differential equation.
 
+        Parameters
+        ----------
+        state : ScalarField
+            The state of the field
+        t : float
+            The current time (default is 0)
+
+        Returns
+        -------
+        ScalarField
+            The evolution rate of the field at the given time
+        """
         # Get the coordinates
         x = state.grid.axes_coords[0]
         U = state
