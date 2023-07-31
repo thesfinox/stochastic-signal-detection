@@ -24,6 +24,7 @@ You can install all dependencies using the `requirements.txt` list:
 ```bash
 python -m venv venv/
 source activate venv/bin/activate
-pip install -f requirements.txt
+pip install -r requirements.txt
 ```
+
 At the time of writing, `python==3.10.12` was used for the development.
