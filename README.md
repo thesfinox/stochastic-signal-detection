@@ -12,7 +12,7 @@ However, some problems remain difficult.
 It is notably the case of signal detection in almost continuous spectra.
 This paper follows a recent bibliographic line, aiming to tackle this issue with field theoretical methods.
 Previous analysis focused on equilibrium Boltzmann distributions for some effective field representing degrees of freedom of data.
-It was possible to establish a relation between signal detection and $\mathbb{Z}_2$-symmetry breaking.
+It was possible to establish a relation between signal detection and $`\mathbb{Z}_2`$-symmetry breaking.
 In this paper, we introduce a stochastic field formalism to address the same issue.
 It follows from a reflection on the role of the statistical properties of fields in the definition of a natural time, from which the ability to reach or not an equilibrium state is in relation with the shape of the dataset.
 In particular, studying the renormalization group of the model, we show that weak ergodicity prescription is (almost) always broken for signal small enough when datasets are close to the Marchenko-Pastur law.
