@@ -1,6 +1,9 @@
 # Artifact files
 *.mp4
 *.pdf
+sim_analytical*
+sim_empirical*
+sim_signal*
 
 # VSCode
 .vscode/

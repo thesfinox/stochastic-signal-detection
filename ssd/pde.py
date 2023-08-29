@@ -70,7 +70,7 @@ class SSD(PDEBase):
         U = state
 
         # Compute the main objects
-        I = self.dist.integrate(0, self.k2)[0]
+        I = self.dist.integrate(0.0, self.k2)[0]
 
         # Compute the dimensions
         dimU = I / self.k2 / self.dist(self.k2)
@@ -94,7 +94,7 @@ class SSD(PDEBase):
         den = (1 + mu2**2)**2
         Q2 = -2 * num / (den + self.epsilon)
 
-        result = Q1 + Q2
+        result = -(Q1 + Q2)
         result.label = 'SSD'
 
         return result

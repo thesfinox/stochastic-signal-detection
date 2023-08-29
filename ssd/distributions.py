@@ -16,17 +16,17 @@ from .base import BaseDistribution
 class HistogramDistribution(BaseDistribution):
     """Use a histogram to estimate a probability density function."""
 
-    def __init__(self, nbins: int = 100):
+    def __init__(self, bins: Union[int, Iterable[float]] = 100):
         """
         Parameters
         ----------
-        nbins : int, optional
-            The number of bins to use in the histogram (default is 100)
+        bins : Union[int, Iterable[float]], optional
+            The number of bins to use in the histogram (default is 100). If an iterable is provided, it will be used as the bin edges.
         """
         super().__init__()
 
         # Set the number of bins
-        self.nbins = nbins
+        self.bins = bins
 
     def fit(self, data: Iterable[float]) -> 'HistogramDistribution':
         """
@@ -41,7 +41,7 @@ class HistogramDistribution(BaseDistribution):
             The fitted histogram distribution
         """
         # Fit the histogram distribution
-        self._hist, self._bins = np.histogram(data, bins=self.nbins, density=True)
+        self._hist, self._bins = np.histogram(data, bins=self.bins, density=True)
 
         # Set the fitted status
         self.fitted = True
@@ -162,17 +162,17 @@ class HistogramDistribution(BaseDistribution):
 class InterpolateDistribution(BaseDistribution):
     """Use a histogram distribution with interpolated values to estimate a probability density function."""
 
-    def __init__(self, nbins: int = 100):
+    def __init__(self, bins: Union[int, Iterable[float]] = 100):
         """
         Parameters
         ----------
-        nbins : int, optional
-            The number of bins to use in the histogram (default is 100)
+        bins : Union[int, Iterabl[float]], optional
+            The number of bins to use in the histogram (default is 100). If an iterable is provided, it will be used as the bin edges.
         """
         super().__init__()
 
         # Set the number of bins
-        self.nbins = nbins
+        self.bins = bins
 
     def fit(
         self,
@@ -196,7 +196,9 @@ class InterpolateDistribution(BaseDistribution):
             The fitted histogram distribution
         """
         # Fit the histogram distribution
-        self._hist, self._bins = np.histogram(data, bins=self.nbins, density=True)
+        (self._hist, self._bins) = np.histogram(data,
+                                                bins=self.bins,
+                                                density=True)
 
         # Interpolate
         dx = np.diff(self._bins)[0]
