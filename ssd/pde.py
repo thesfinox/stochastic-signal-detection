@@ -7,6 +7,7 @@ The PDE module contains the class for the differential equation encoding the beh
 from pde import PDEBase, ScalarField
 from .base import BaseDistribution
 from pde.grids.boundaries.axes import BoundariesData
+import numpy as np
 
 
 class SSD(PDEBase):
@@ -37,6 +38,12 @@ class SSD(PDEBase):
         self.k2 = k2
         self.epsilon = epsilon
         self.bc = bc
+
+        # Compute constants
+        self._I = self.dist.integrate(0.0, self.k2)[0]
+        self._dimU = self._I / self.k2 / self.dist(self.k2)
+        P = self.k2 * self.dist.grad(self.k2) / self.dist(self.k2)
+        self._dimChi = 2 - self._dimU * (P+2)
 
     @property
     def expression(self) -> str:
@@ -69,15 +76,6 @@ class SSD(PDEBase):
         x = state.grid.axes_coords[0]
         U = state
 
-        # Compute the main objects
-        I = self.dist.integrate(0.0, self.k2)[0]
-
-        # Compute the dimensions
-        dimU = I / self.k2 / self.dist(self.k2)
-
-        P = self.k2 * self.dist.grad(self.k2) / self.dist(self.k2)
-        dimChi = 2 - dimU * (P+2)
-
         # Compute the derivatives
         grad = U.gradient(bc=self.bc)[0]
         grad2 = grad.gradient(bc=self.bc)[0]
@@ -88,13 +86,15 @@ class SSD(PDEBase):
         mu2 = U + 2*block
 
         # Sum the components
-        Q1 = -dimU * U + dimChi*block
+        Q1 = -self._dimU * U + self._dimChi*block
 
         num = 3*grad + 2*block2
         den = (1 + mu2**2)**2
         Q2 = -2 * num / (den + self.epsilon)
 
         result = -(Q1 + Q2)
+        # if np.isnan(result.data).any():
+        #     result.data = np.nan_to_num(result.data)
         result.label = 'SSD'
 
         return result

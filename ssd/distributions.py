@@ -179,6 +179,7 @@ class InterpolateDistribution(BaseDistribution):
         data: Iterable[float],
         n: int = 1,
         s: float = 0.01,
+        force_origin: bool = False,
     ) -> 'InterpolateDistribution':
         """
         Parameters
@@ -189,6 +190,8 @@ class InterpolateDistribution(BaseDistribution):
             The degree of the interpolating polynomial (default is 1)
         s : float, optional
             The smoothing factor (default is 0.01)
+        force_origin : bool, optional
+            Force the interpolating polynomial to pass through the origin (default is False)
 
         Returns
         -------
@@ -196,14 +199,16 @@ class InterpolateDistribution(BaseDistribution):
             The fitted histogram distribution
         """
         # Fit the histogram distribution
-        (self._hist, self._bins) = np.histogram(data,
-                                                bins=self.bins,
-                                                density=True)
+        self._hist, self._bins = np.histogram(data, bins=self.bins, density=True)
 
         # Interpolate
-        dx = np.diff(self._bins)[0]
+        dx = np.diff(self._bins)
         X = self._bins[:-1] + dx/2
         Y = self._hist
+
+        if force_origin:
+            X = np.insert(X, 0, 0)
+            Y = np.insert(Y, 0, 0)
 
         self._spl = splrep(X, Y, k=n, s=s, per=False)
 
