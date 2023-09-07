@@ -15,7 +15,8 @@ class SSD(PDEBase):
 
     def __init__(self,
                  dist: BaseDistribution,
-                 k2: float,
+                 k2max: float,
+                 k2min: float = 0.0,
                  noise: float = 0.0,
                  epsilon: float = 1.e-9,
                  bc: BoundariesData = 'auto_periodic_neumann'):
@@ -24,25 +25,37 @@ class SSD(PDEBase):
         ----------
         dist : BaseDistribution
             Distribution of the signal
-        k2 : float
-            Renormalization scale (``k^2``)
+        k2max : float
+            Energy scale (``k^2_{max}``)
+        k2min : float
+            Lower bound of the energy scale (default is 0.0)
         noise : float
             Noise intensity (default is 0.0)
         epsilon : float
             Small number to avoid division by zero (default is 1.e-9)
         bc : BoundariesData
             Boundary conditions (default is 'auto_periodic_neumann')
+
+        Raises
+        ------
+        ValueError
+            If the lower bound of the energy scale is negative
         """
         super().__init__(noise=noise)
         self.dist = dist
-        self.k2 = k2
+        self.k2max = k2max
+        self.k2min = k2min
+        if self.k2min < 0:
+            raise ValueError(
+                f'The lower bound of the energy scale must be positive. Found k2min = {self.k2min} < 0 instead.'
+            )
         self.epsilon = epsilon
         self.bc = bc
 
         # Compute constants
-        self._I = self.dist.integrate(0.0, self.k2)[0]
-        self._dimU = self._I / self.k2 / self.dist(self.k2)
-        P = self.k2 * self.dist.grad(self.k2) / self.dist(self.k2)
+        self._I = self.dist.integrate(self.k2min, self.k2max)[0]
+        self._dimU = self._I / self.k2max / self.dist(self.k2max)
+        P = self.k2max * self.dist.grad(self.k2max) / self.dist(self.k2max)
         self._dimChi = 2 - self._dimU * (P+2)
 
     @property
@@ -86,15 +99,13 @@ class SSD(PDEBase):
         mu2 = U + 2*block
 
         # Sum the components
-        Q1 = -self._dimU * U + self._dimChi*block
+        Q1 = -self._dimU * U + self._dimChi * block
 
         num = 3*grad + 2*block2
         den = (1 + mu2**2)**2
         Q2 = -2 * num / (den + self.epsilon)
 
         result = -(Q1 + Q2)
-        # if np.isnan(result.data).any():
-        #     result.data = np.nan_to_num(result.data)
         result.label = 'SSD'
 
         return result
