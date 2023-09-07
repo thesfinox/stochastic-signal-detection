@@ -91,21 +91,35 @@ class SSD(PDEBase):
 
         # Compute the derivatives
         grad = U.gradient(bc=self.bc)[0]
+        grad.data = np.nan_to_num(grad.data)
         grad2 = grad.gradient(bc=self.bc)[0]
+        grad2.data = np.nan_to_num(grad2.data)
+
+        # Compute auxiliary quantities
         block = x * grad
+        block.data = np.nan_to_num(block.data)
         block2 = x * grad2
+        block2.data = np.nan_to_num(block2.data)
 
         # Compute the adimensional mass
         mu2 = U + 2*block
+        mu2.data = np.nan_to_num(mu2.data)
 
-        # Sum the components
+        # Sum the components (first term)
         Q1 = -self._dimU * U + self._dimChi * block
+        Q1.data = np.nan_to_num(Q1.data)
 
+        # Second term
         num = 3*grad + 2*block2
+        num.data = np.nan_to_num(num.data)
         den = (1 + mu2**2)**2
+        den.data = np.nan_to_num(den.data)
         Q2 = -2 * num / (den + self.epsilon)
+        Q2.data = np.nan_to_num(Q2.data)
 
+        # Compute the final result
         result = -(Q1 + Q2)
+        result.data = np.nan_to_num(result.data)
         result.label = 'SSD'
 
         return result
