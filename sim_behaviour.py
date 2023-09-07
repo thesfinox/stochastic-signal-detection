@@ -14,11 +14,14 @@ from matplotlib import pyplot as plt
 from pde import CartesianGrid, MemoryStorage, ScalarField
 from tabulate import tabulate
 
-from ssd import (SSD, InterpolateDistribution, MarchenkoPastur,
+from ssd import (SSD,
+                 InterpolateDistribution,
+                 MarchenkoPastur,
                  TranslatedInverseMarchenkoPastur)
 from ssd.utils.matrix import create_bulk, create_signal
 from ssd.utils.plots import (plot_inverse_mp_distribution,
-                             plot_mp_distribution, plot_potential)
+                             plot_mp_distribution,
+                             plot_potential)
 
 __author__ = 'Riccardo Finotello'
 __email__ = 'riccardo.finotello@cea.fr'
@@ -48,7 +51,8 @@ def main(args):
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler(output / f'{prefix}.log')
     handler.setLevel(logging.DEBUG)
-    handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
+    handler.setFormatter(
+        logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
     logger.addHandler(handler)
     logger.info(f'Initial setup:\n{table}')
 
@@ -80,7 +84,7 @@ def main(args):
 
     # Compute the eigenvalues of the covariance matrix and its inverse
     critical_position = []
-    for beta in beta_list:
+    for n, beta in enumerate(beta_list):
 
         logger.info(f'beta = {beta:.2f}')
         subprefix = f'beta={beta:.2f}' + '_' + prefix
@@ -106,9 +110,10 @@ def main(args):
 
         # Plot the Marchenko-Pastur distribution
         mp = MarchenkoPastur(L=args.L)
-        x = np.linspace(0, E.max() * 1.1, num=10000)
-        y = np.array([mp(xi) for xi in x])
-        plot_mp_distribution(E, x, y, args.n_bins, output, subprefix)
+        if n % 25 == 0:
+            x = np.linspace(0, E.max() * 1.1, num=10000)
+            y = np.array([mp(xi) for xi in x])
+            plot_mp_distribution(E, x, y, args.n_bins, output, subprefix)
 
         # Find the mass scale of the noise
         mass_scale = (E >= mp.max).argmax()
@@ -126,10 +131,6 @@ def main(args):
         bins = args.n_bins**2  # increase number of bins for resolution
         dist = InterpolateDistribution(bins=bins)  # empirical distribution
         dist = dist.fit(E_inv, n=2, s=0.5, force_origin=True)
-        mp_inv = TranslatedInverseMarchenkoPastur(L=args.L)
-        x = np.linspace(0, E_inv.max() * 1.1, num=10000)
-        y_dist = np.array([dist(xi) for xi in x])
-        y = np.array([mp_inv(xi) for xi in x])
 
         # Define the grid
         grid = CartesianGrid(
@@ -156,77 +157,82 @@ def main(args):
         _ = eq.solve(state, t_range=args.t_range, dt=args.dt, tracker=trackers)
 
         # Plot the inverse distribution with lines over the integration interval
-        plot_inverse_mp_distribution(E_inv,
-                                     x,
-                                     y,
-                                     y_dist,
-                                     k2min,
-                                     k2max,
-                                     bins,
-                                     output,
-                                     subprefix)
-
+        if n % 25 == 0:
+            mp_inv = TranslatedInverseMarchenkoPastur(L=args.L)
+            x = np.linspace(0, E_inv.max() * 1.1, num=10000)
+            y_dist = np.array([dist(xi) for xi in x])
+            y = np.array([mp_inv(xi) for xi in x])
+            plot_inverse_mp_distribution(E_inv,
+                                         x,
+                                         y,
+                                         y_dist,
+                                         k2min,
+                                         k2max,
+                                         bins,
+                                         output,
+                                         subprefix)
 
         # Visualize the simulation at fixed time steps
-        x = storage[0].grid.axes_coords[0]
-        y = [storage[t].data for t in args.viz]
-        y = np.nan_to_num(y)
-        My = np.log10(y.max(axis=1)+1).astype('int')
-        y = y / y.max(axis=1, keepdims=True)
+        if n % 25 == 0:
+            x = storage[0].grid.axes_coords[0]
+            y = [storage[t].data for t in args.viz]
+            y = np.nan_to_num(y)
+            My = np.log10(y.max(axis=1) + 1).astype('int')
+            y = y / y.max(axis=1, keepdims=True)
 
-        fig, ax = plt.subplots(figsize=(8, 6))
-        C = ['r-', 'b-', 'g-', 'k-']
-        for i, y_i in enumerate(y):
-            ax.plot(
+            fig, ax = plt.subplots(figsize=(8, 6))
+            C = ['r-', 'b-', 'g-', 'k-']
+            for i, y_i in enumerate(y):
+                ax.plot(
+                    x,
+                    y_i,
+                    C[i],
+                    label=rf'$\tau$ = {args.viz[i]} ($\times 10^{{{My[i]:d}}}$)'
+                )
+            ax.legend(loc='upper left', bbox_to_anchor=(0.05, 0.95))
+            ax.set_xlabel(r'$\overline{\chi}$')
+            ax.set_ylabel(r'$\overline{\mathcal{U}}^{~\prime}$')
+
+            # Create an inset axis to zoom around some values
+            ax_inset_1 = ax.inset_axes([0.08, 0.15, 0.3, 0.3])
+            ax_inset_1.plot(
                 x,
-                y_i,
-                C[i],
-                label=rf'$\tau$ = {args.viz[i]} ($\times 10^{{{My[i]:d}}}$)')
-        ax.legend(loc='upper left', bbox_to_anchor=(0.05, 0.95))
-        ax.set_xlabel(r'$\overline{\chi}$')
-        ax.set_ylabel(r'$\overline{\mathcal{U}}^{~\prime}$')
+                y[1],
+                C[1],
+                label=rf'$\tau$ = {args.viz[1]} ($\times 10^{{{My[1]:d}}}$)')
+            left, right = (x >= 0.45).argmax(), (x >= 0.60).argmax()
+            ymax = np.abs(y[1][left:right]).max()
+            ax_inset_1.set_xlim([0.45, 0.60])
+            ax_inset_1.set_ylim([-1.1 * ymax / 10, 1.1 * ymax / 10])
+            ax_inset_1.ticklabel_format(axis='y',
+                                        style='sci',
+                                        scilimits=(0, 0),
+                                        useMathText=True)
+            ax.indicate_inset_zoom(ax_inset_1)
 
-        # Create an inset axis to zoom around some values
-        ax_inset_1 = ax.inset_axes([0.08, 0.15, 0.3, 0.3])
-        ax_inset_1.plot(
-            x,
-            y[1],
-            C[1],
-            label=rf'$\tau$ = {args.viz[1]} ($\times 10^{{{My[1]:d}}}$)')
-        left, right = (x >= 0.45).argmax(), (x >= 0.60).argmax()
-        ymax = np.abs(y[1][left:right]).max()
-        ax_inset_1.set_xlim([0.45, 0.60])
-        ax_inset_1.set_ylim([-1.1 * ymax / 10, 1.1 * ymax / 10])
-        ax_inset_1.ticklabel_format(axis='y',
-                                    style='sci',
-                                    scilimits=(0, 0),
-                                    useMathText=True)
-        ax.indicate_inset_zoom(ax_inset_1)
+            ax_inset_2 = ax.inset_axes([0.57, 0.07, 0.3, 0.3])
+            ax_inset_2.plot(
+                x,
+                y[2],
+                C[2],
+                label=rf'$\tau$ = {args.viz[2]} ($\times 10^{{{My[2]:d}}}$)')
+            left, right = (x >= 0.70).argmax(), (x >= 0.85).argmax()
+            ymax = np.abs(y[2][left:right]).max()
+            ax_inset_2.set_xlim([0.70, 0.85])
+            ax_inset_2.set_ylim([-1.1 * ymax / 10, 1.1 * ymax / 10])
+            ax_inset_2.ticklabel_format(axis='y',
+                                        style='sci',
+                                        scilimits=(0, 0),
+                                        useMathText=True)
+            ax.indicate_inset_zoom(ax_inset_2)
 
-        ax_inset_2 = ax.inset_axes([0.57, 0.07, 0.3, 0.3])
-        ax_inset_2.plot(
-            x,
-            y[2],
-            C[2],
-            label=rf'$\tau$ = {args.viz[2]} ($\times 10^{{{My[2]:d}}}$)')
-        left, right = (x >= 0.70).argmax(), (x >= 0.85).argmax()
-        ymax = np.abs(y[2][left:right]).max()
-        ax_inset_2.set_xlim([0.70, 0.85])
-        ax_inset_2.set_ylim([-1.1 * ymax / 10, 1.1 * ymax / 10])
-        ax_inset_2.ticklabel_format(axis='y',
-                                    style='sci',
-                                    scilimits=(0, 0),
-                                    useMathText=True)
-        ax.indicate_inset_zoom(ax_inset_2)
-
-        plt.savefig(output / f'{subprefix}_sim.pdf')
-        plt.close(fig)
+            plt.savefig(output / f'{subprefix}_sim.pdf')
+            plt.close(fig)
 
         # Display the evolution of the field in a given position
         t = []
         y = []
 
-        fig, ax = plt.subplots(figsize=(8, 6))
         x = storage[0].grid.axes_coords[0]
         idx = (x >= args.chi).argmax()
         for time, field in storage.items():
@@ -234,25 +240,29 @@ def main(args):
             value = data[idx]
             t.append(time)
             y.append(value)
-            if int(np.log10(np.abs(value)+1)) >= 308:
+            if int(np.log10(np.abs(value) + 1)) >= 308:
                 break
 
         t = np.asarray(t)
         y = np.asarray(y)
-        My = int(np.log10(np.abs(y).max()+1))
+        My = int(np.log10(np.abs(y).max() + 1))
         y /= np.abs(y).max()
 
-        ax.plot(t, y, 'r-')
-        ax.set_xlabel(r'$\tau$')
-        ax.set_ylabel(rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{{\chi_0}}]$ [$\times 10^{{{My}}}$]')
-        ax.ticklabel_format(axis='y',
-                            style='sci',
-                            scilimits=(0, 0),
-                            useMathText=True)
-        # ax.set_yscale('symlog')
+        if n % 25 == 0:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.plot(t, y, 'r-')
+            ax.set_xlabel(r'$\tau$')
+            ax.set_ylabel(
+                rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{{\chi_0}}]$ [$\times 10^{{{My}}}$]'
+            )
+            ax.ticklabel_format(axis='y',
+                                style='sci',
+                                scilimits=(0, 0),
+                                useMathText=True)
+            # ax.set_yscale('symlog')
 
-        plt.savefig(output / f'{subprefix}_sim_time.pdf')
-        plt.close(fig)
+            plt.savefig(output / f'{subprefix}_sim_time.pdf')
+            plt.close(fig)
 
         # Compute the critical position
         pos = np.abs(np.diff(y)).argmax()
