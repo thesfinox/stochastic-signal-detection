@@ -10,4 +10,5 @@ Stochastic Signal Detection
 .. toctree::
    :maxdepth: 4
 
+   sim_behaviour
    ssd

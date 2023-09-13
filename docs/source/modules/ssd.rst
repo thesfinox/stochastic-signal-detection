@@ -1,6 +1,14 @@
 SSD package
 ===========
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ssd.utils
+
 Submodules
 ----------
 
@@ -20,10 +28,18 @@ ssd.distributions module
    :undoc-members:
    :show-inheritance:
 
-ssd.pde module
+ssd.ssd module
 --------------
 
-.. automodule:: ssd.pde
+.. automodule:: ssd.ssd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ssd
    :members:
    :undoc-members:
    :show-inheritance:

@@ -63,7 +63,7 @@ def plot_inverse_mp_distribution(evl: list,
 
     ax_inset_1 = fig.add_axes([0.35, 0.25, 0.35, 0.55])
     ax_inset_1.set_xlim([-0.1, 0.5])
-    ax_inset_1.set_ylim([0.0, 0.9])
+    ax_inset_1.set_ylim([0.0, 1.1])
     ax_inset_1.hist(evl,
                     bins=bins,
                     density=True,
@@ -149,9 +149,9 @@ def plot_mp_distribution(evl: list,
     plt.close(fig)
 
 
-def plot_potential(x_inf: float = 0.0,
-                   x_sup: float = 0.0,
-                   n_values: int = 1000,
+def plot_potential(xinf: float = 0.0,
+                   xsup: float = 0.0,
+                   nval: int = 1000,
                    mu1: float = 0.0,
                    mu2: float = 1.0,
                    mu3: float = 0.0,
@@ -162,11 +162,11 @@ def plot_potential(x_inf: float = 0.0,
 
     Parameters
     ----------
-    x_inf : float, optional
+    xinf : float, optional
         Lower bound of the domain, by default 0.0
-    x_sup : float, optional
+    xsup : float, optional
         Upper bound of the domain, by default 0.0
-    n_values : int, optional
+    nval : int, optional
         Number of grid points, by default 1000
     mu1 : float, optional
         Mass parameter (quadratic term), by default 0.0
@@ -180,7 +180,7 @@ def plot_potential(x_inf: float = 0.0,
         Prefix of the output files, by default 'initial_potential'
     """
     fig, ax = plt.subplots()
-    x = np.linspace(x_inf, x_sup, n_values)
+    x = np.linspace(xinf, xsup, nval)
     y = mu1*x + mu2 * x**2 + mu3 * x**3
 
     ax.plot(x, y, 'k-', label='potential')

@@ -15,8 +15,6 @@ class SSD(PDEBase):
 
     def __init__(self,
                  dist: BaseDistribution,
-                 k2max: float,
-                 k2min: float = 0.0,
                  noise: float = 0.0,
                  epsilon: float = 1.e-9,
                  bc: BoundariesData = 'auto_periodic_neumann'):
@@ -25,10 +23,6 @@ class SSD(PDEBase):
         ----------
         dist : BaseDistribution
             Distribution of the signal
-        k2max : float
-            Energy scale (``k^2_{max}``)
-        k2min : float
-            Lower bound of the energy scale (default is 0.0)
         noise : float
             Noise intensity (default is 0.0)
         epsilon : float
@@ -43,20 +37,8 @@ class SSD(PDEBase):
         """
         super().__init__(noise=noise)
         self.dist = dist
-        self.k2max = k2max
-        self.k2min = k2min
-        if self.k2min < 0:
-            raise ValueError(
-                f'The lower bound of the energy scale must be positive. Found k2min = {self.k2min} < 0 instead.'
-            )
         self.epsilon = epsilon
         self.bc = bc
-
-        # Compute constants
-        self._I = self.dist.integrate(self.k2min, self.k2max)[0]
-        self._dimU = self._I / self.k2max / self.dist(self.k2max)
-        P = self.k2max * self.dist.grad(self.k2max) / self.dist(self.k2max)
-        self._dimChi = 2 - self._dimU * (P+2)
 
     @property
     def expression(self) -> str:
@@ -86,40 +68,38 @@ class SSD(PDEBase):
             The evolution rate of the field at the given time
         """
         # Get the coordinates
+        k = t
+        k2 = t**2
         x = state.grid.axes_coords[0]
         U = state
 
+        # Compute constants
+        _I = self.dist.integrate(0, k, moment=1, power=2)[0]
+        _dimU = 2 * _I / (k2 + self.epsilon) / (self.dist(k2) + self.epsilon)
+        _P = k2 * self.dist.grad(k2) / (self.dist(k2) + self.epsilon)
+        _dimChi = 2 - _dimU * (_P+2)
+
         # Compute the derivatives
         grad = U.gradient(bc=self.bc)[0]
-        grad.data = np.nan_to_num(grad.data)
         grad2 = grad.gradient(bc=self.bc)[0]
-        grad2.data = np.nan_to_num(grad2.data)
 
         # Compute auxiliary quantities
         block = x * grad
-        block.data = np.nan_to_num(block.data)
         block2 = x * grad2
-        block2.data = np.nan_to_num(block2.data)
 
         # Compute the adimensional mass
         mu2 = U + 2*block
-        mu2.data = np.nan_to_num(mu2.data)
 
         # Sum the components (first term)
-        Q1 = -self._dimU * U + self._dimChi * block
-        Q1.data = np.nan_to_num(Q1.data)
+        Q1 = -_dimU * U + _dimChi*block
 
         # Second term
         num = 3*grad + 2*block2
-        num.data = np.nan_to_num(num.data)
         den = (1 + mu2**2)**2
-        den.data = np.nan_to_num(den.data)
         Q2 = -2 * num / (den + self.epsilon)
-        Q2.data = np.nan_to_num(Q2.data)
 
         # Compute the final result
-        result = -(Q1 + Q2)
-        result.data = np.nan_to_num(result.data)
+        result = -k * self.dist(k2) * (Q1+Q2) / (_I + self.epsilon)
         result.label = 'SSD'
 
         return result

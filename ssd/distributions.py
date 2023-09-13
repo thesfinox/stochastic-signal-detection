@@ -180,6 +180,7 @@ class InterpolateDistribution(BaseDistribution):
         n: int = 1,
         s: float = 0.01,
         force_origin: bool = False,
+        epsilon: float = 1.e-9
     ) -> 'InterpolateDistribution':
         """
         Parameters
@@ -192,12 +193,17 @@ class InterpolateDistribution(BaseDistribution):
             The smoothing factor (default is 0.01)
         force_origin : bool, optional
             Force the interpolating polynomial to pass through the origin (default is False)
+        epsilon : float, optional
+            Small number to avoid division by zero (default is 1.e-9)
 
         Returns
         -------
         HistogramDistribution
             The fitted histogram distribution
         """
+        self.epsilon = epsilon
+        self.force_origin = force_origin
+
         # Fit the histogram distribution
         self._hist, self._bins = np.histogram(data, bins=self.bins, density=True)
 
@@ -206,7 +212,7 @@ class InterpolateDistribution(BaseDistribution):
         X = self._bins[:-1] + dx/2
         Y = self._hist
 
-        if force_origin:
+        if self.force_origin:
             X = np.insert(X, 0, 0)
             Y = np.insert(Y, 0, 0)
 
@@ -244,7 +250,10 @@ class InterpolateDistribution(BaseDistribution):
         if (x < self._bins[0]) or (x >= self._bins[-1]):
             return 0
 
-        return float(splev(x, self._spl))
+        if self.force_origin:
+            return float(x * splev(x, self._spl) / (x + self.epsilon))
+        else:
+            return float(splev(x, self._spl))
 
 
 class EmpiricalDistribution(BaseDistribution):

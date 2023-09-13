@@ -40,7 +40,8 @@ class BaseDistribution:
     def integrate(self,
                   a: float = -np.inf,
                   b: float = np.inf,
-                  moment: float = 0) -> Tuple[float, float]:
+                  moment: float = 0.0,
+                  power: float = 1.0) -> Tuple[float, float]:
         """
         Integrate the probability density function from a to b.
 
@@ -52,13 +53,15 @@ class BaseDistribution:
             The upper bound of the integration (default is inf)
         moment : float, optional
             The moment to compute (default is 0)
+        power: float, optional
+            The power to raise the integrand to (default is 1)
 
         Returns
         -------
         Tuple[float, float]
             The value of the integral and the error
         """
-        return quad(lambda x: x**moment * self(x), a, b)
+        return quad(lambda x: x**moment * self(x**power), a, b)
 
     def grad(self, x: float, dx: float = 1e-9) -> float:
         """

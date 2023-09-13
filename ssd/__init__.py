@@ -15,7 +15,7 @@ from .distributions import (EmpiricalDistribution,
                             TranslatedInverseMarchenkoPastur,
                             TranslatedMarchenkoPastur,
                             WignerSemicircle)
-from .pde import SSD
+from .ssd import SSD
 
 # Set the version number
 __version__ = '0.1.0'
