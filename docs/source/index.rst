@@ -7,6 +7,8 @@
 
 .. include:: requirements.rst
 
+.. include:: tutorials.rst
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents
@@ -17,7 +19,8 @@
    :maxdepth: 2
    :caption: Tutorials
 
-   tutorials/sim_analytical_tuto
+   tutorials/simulation_MP_analytical
+   tutorials/simulation
 
 .. toctree::
    :maxdepth: 2

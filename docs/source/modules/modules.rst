@@ -5,10 +5,10 @@ Stochastic Signal Detection
    :maxdepth: 2
    :caption: Tutorials
 
-   ../tutorials/sim_analytical_tuto
+   ../tutorials/simulation_MP_analytical
+   ../tutorials/simulation
 
 .. toctree::
    :maxdepth: 4
 
-   sim_behaviour
    ssd

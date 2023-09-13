@@ -4,6 +4,7 @@
 sim_analytical*
 sim_empirical*
 sim_signal*
+result*
 
 # VSCode
 .vscode/
