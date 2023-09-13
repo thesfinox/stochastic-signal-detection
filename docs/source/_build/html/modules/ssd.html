@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSD package &mdash; Stochastic Signal Detection (SSD) 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ssd.utils package" href="ssd.utils.html" />
+    <link rel="prev" title="Stochastic Signal Detection" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Stochastic Signal Detection (SSD)
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Stochastic Signal Detection (SSD)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/simulation_MP_analytical.html">Analytical Marchenko-Pastur Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/simulation.html">Random Matrix Simulation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Stochastic Signal Detection</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/simulation_MP_analytical.html">Analytical Marchenko-Pastur Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/simulation.html">Random Matrix Simulation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SSD package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ssd.utils.html">ssd.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ssd.base">ssd.base module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.base.BaseDistribution"><code class="docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ssd.distributions">ssd.distributions module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.EmpiricalDistribution"><code class="docutils literal notranslate"><span class="pre">EmpiricalDistribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.HistogramDistribution"><code class="docutils literal notranslate"><span class="pre">HistogramDistribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.InterpolateDistribution"><code class="docutils literal notranslate"><span class="pre">InterpolateDistribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.InverseMarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">InverseMarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.InverseWignerSemicircle"><code class="docutils literal notranslate"><span class="pre">InverseWignerSemicircle</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.MarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">MarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.TranslatedInverseMarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">TranslatedInverseMarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.TranslatedMarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">TranslatedMarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.distributions.WignerSemicircle"><code class="docutils literal notranslate"><span class="pre">WignerSemicircle</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ssd.ssd">ssd.ssd module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.ssd.SSD"><code class="docutils literal notranslate"><span class="pre">SSD</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ssd">Module contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.EmpiricalDistribution"><code class="docutils literal notranslate"><span class="pre">EmpiricalDistribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.HistogramDistribution"><code class="docutils literal notranslate"><span class="pre">HistogramDistribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.InterpolateDistribution"><code class="docutils literal notranslate"><span class="pre">InterpolateDistribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.InverseMarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">InverseMarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.InverseWignerSemicircle"><code class="docutils literal notranslate"><span class="pre">InverseWignerSemicircle</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.MarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">MarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.SSD"><code class="docutils literal notranslate"><span class="pre">SSD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.TranslatedInverseMarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">TranslatedInverseMarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.TranslatedMarchenkoPastur"><code class="docutils literal notranslate"><span class="pre">TranslatedMarchenkoPastur</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssd.WignerSemicircle"><code class="docutils literal notranslate"><span class="pre">WignerSemicircle</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Stochastic Signal Detection (SSD)</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Stochastic Signal Detection</a></li>
+      <li class="breadcrumb-item active">SSD package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/ssd.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ssd-package">
+<h1>SSD package<a class="headerlink" href="#ssd-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ssd.utils.html">ssd.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ssd.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ssd.utils.html#module-ssd.utils.matrix">ssd.utils.matrix module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ssd.utils.html#ssd.utils.matrix.create_bulk"><code class="docutils literal notranslate"><span class="pre">create_bulk()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ssd.utils.html#ssd.utils.matrix.create_signal"><code class="docutils literal notranslate"><span class="pre">create_signal()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ssd.utils.html#module-ssd.utils.plots">ssd.utils.plots module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ssd.utils.html#ssd.utils.plots.plot_inverse_mp_distribution"><code class="docutils literal notranslate"><span class="pre">plot_inverse_mp_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ssd.utils.html#ssd.utils.plots.plot_mp_distribution"><code class="docutils literal notranslate"><span class="pre">plot_mp_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ssd.utils.html#ssd.utils.plots.plot_potential"><code class="docutils literal notranslate"><span class="pre">plot_potential()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ssd.utils.html#module-ssd.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-ssd.base">
+<span id="ssd-base-module"></span><h2>ssd.base module<a class="headerlink" href="#module-ssd.base" title="Permalink to this heading"></a></h2>
+<p class="linemarker linemarker-1">Base classes</p>
+<p class="linemarker linemarker-3">Base abstract classes for the distributions</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.base.BaseDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.base.</span></span><span class="sig-name descname"><span class="pre">BaseDistribution</span></span><a class="reference internal" href="../_modules/ssd/base.html#BaseDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.base.BaseDistribution" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="linemarker linemarker-1">A base class for probability density functions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.base.BaseDistribution.grad">
+<span class="sig-name descname"><span class="pre">grad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/ssd/base.html#BaseDistribution.grad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.base.BaseDistribution.grad" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Compute the derivative of the probability density function at a given point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>float</em>) – The point at which to evaluate the derivative</p></li>
+<li><p><strong>dx</strong> (<em>float</em><em>, </em><em>optional</em>) – The step size (default is 1e-9)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the derivative at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.base.BaseDistribution.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ssd/base.html#BaseDistribution.integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.base.BaseDistribution.integrate" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Integrate the probability density function from a to b.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>float</em><em>, </em><em>optional</em>) – The lower bound of the integration (default is -inf)</p></li>
+<li><p><strong>b</strong> (<em>float</em><em>, </em><em>optional</em>) – The upper bound of the integration (default is inf)</p></li>
+<li><p><strong>moment</strong> (<em>float</em><em>, </em><em>optional</em>) – The moment to compute (default is 0)</p></li>
+<li><p><strong>power</strong> (<em>float</em><em>, </em><em>optional</em>) – The power to raise the integrand to (default is 1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the integral and the error</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.base.BaseDistribution.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><a class="headerlink" href="#ssd.base.BaseDistribution.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.base.BaseDistribution.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><a class="headerlink" href="#ssd.base.BaseDistribution.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ssd.distributions">
+<span id="ssd-distributions-module"></span><h2>ssd.distributions module<a class="headerlink" href="#module-ssd.distributions" title="Permalink to this heading"></a></h2>
+<p class="linemarker linemarker-1">Probability Density Functions</p>
+<p class="linemarker linemarker-3">A collection of probability density functions</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.EmpiricalDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">EmpiricalDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bw_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#EmpiricalDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.EmpiricalDistribution" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">Estimate an empirical distribution using a Gaussian KDE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bw_method</strong> (<em>str</em><em>, </em><em>float</em><em>, or </em><em>callable</em><em>, </em><em>optional</em>) – The method used to calculate the estimator bandwidth. This can be ‘scott’, ‘silverman’, a scalar constant or a callable. If a scalar, this will be used directly as <cite>kde.factor</cite>. If a callable, it should take a <cite>gaussian_kde</cite> instance as only parameter and return a scalar. If None (default), ‘scott’ is used. See <code class="docutils literal notranslate"><span class="pre">scipy.stats.gaussian_kde</span></code> for more details.</p></li>
+<li><p><strong>weights</strong> (<em>array_like</em><em>, </em><em>optional</em>) – The weights for each value in the empirical distribution. This must be the same shape as the input data. See <code class="docutils literal notranslate"><span class="pre">scipy.stats.gaussian_kde</span></code> for more details.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.distributions.EmpiricalDistribution.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ssd.distributions.EmpiricalDistribution" title="ssd.distributions.EmpiricalDistribution"><span class="pre">EmpiricalDistribution</span></a></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#EmpiricalDistribution.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.EmpiricalDistribution.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>array_like</em>) – The data to fit</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted empirical distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ssd.distributions.EmpiricalDistribution" title="ssd.distributions.EmpiricalDistribution">EmpiricalDistribution</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.EmpiricalDistribution.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><a class="headerlink" href="#ssd.distributions.EmpiricalDistribution.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.EmpiricalDistribution.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><a class="headerlink" href="#ssd.distributions.EmpiricalDistribution.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.HistogramDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">HistogramDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.HistogramDistribution" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">Use a histogram to estimate a probability density function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bins</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>Iterable</em><em>[</em><em>float</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – The number of bins to use in the histogram (default is 100). If an iterable is provided, it will be used as the bin edges.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.distributions.HistogramDistribution.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ssd.distributions.HistogramDistribution" title="ssd.distributions.HistogramDistribution"><span class="pre">HistogramDistribution</span></a></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.HistogramDistribution.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>array_like</em>) – The data to fit</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted histogram distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ssd.distributions.HistogramDistribution" title="ssd.distributions.HistogramDistribution">HistogramDistribution</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.distributions.HistogramDistribution.grad">
+<span class="sig-name descname"><span class="pre">grad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution.grad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.HistogramDistribution.grad" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Compute the derivative of the probability density function at a given point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>float</em>) – The point at which to compute the derivative</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the derivative at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.distributions.HistogramDistribution.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution.integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.HistogramDistribution.integrate" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Integrate the probability density function from a to b.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>float</em><em>, </em><em>optional</em>) – The lower bound of the integration (default is -inf)</p></li>
+<li><p><strong>b</strong> (<em>float</em><em>, </em><em>optional</em>) – The upper bound of the integration (default is inf)</p></li>
+<li><p><strong>moment</strong> (<em>float</em><em>, </em><em>optional</em>) – The moment to compute (default is 0)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the integral and the error</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.InterpolateDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">InterpolateDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#InterpolateDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.InterpolateDistribution" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">Use a histogram distribution with interpolated values to estimate a probability density function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bins</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>Iterabl</em><em>[</em><em>float</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – The number of bins to use in the histogram (default is 100). If an iterable is provided, it will be used as the bin edges.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.distributions.InterpolateDistribution.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_origin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ssd.distributions.InterpolateDistribution" title="ssd.distributions.InterpolateDistribution"><span class="pre">InterpolateDistribution</span></a></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#InterpolateDistribution.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.InterpolateDistribution.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array_like</em>) – The data to fit</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – The degree of the interpolating polynomial (default is 1)</p></li>
+<li><p><strong>s</strong> (<em>float</em><em>, </em><em>optional</em>) – The smoothing factor (default is 0.01)</p></li>
+<li><p><strong>force_origin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Force the interpolating polynomial to pass through the origin (default is False)</p></li>
+<li><p><strong>epsilon</strong> (<em>float</em><em>, </em><em>optional</em>) – Small number to avoid division by zero (default is 1.e-9)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted histogram distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ssd.distributions.HistogramDistribution" title="ssd.distributions.HistogramDistribution">HistogramDistribution</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.InverseMarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">InverseMarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#InverseMarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.InverseMarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.MarchenkoPastur" title="ssd.distributions.MarchenkoPastur"><code class="xref py py-class docutils literal notranslate"><span class="pre">MarchenkoPastur</span></code></a></p>
+<p class="linemarker linemarker-1">An inverse Marchenko-Pastur probability density function.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.InverseMarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.InverseMarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.InverseMarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.InverseMarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.InverseWignerSemicircle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">InverseWignerSemicircle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#InverseWignerSemicircle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.InverseWignerSemicircle" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.WignerSemicircle" title="ssd.distributions.WignerSemicircle"><code class="xref py py-class docutils literal notranslate"><span class="pre">WignerSemicircle</span></code></a></p>
+<p class="linemarker linemarker-1">An inverse Wigner semicircle probability density function.</p>
+<p class="linemarker linemarker-3">The Wigner semicircle (WS) distribution is a probability density function that describes the asymptotic distribution of the eigenvalues of a large symmetric random matrix with Gaussian entries. Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times n\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span>, the WS distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \sqrt{4 \sigma^2 - x^2} \mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\]</div>
+<p class="linemarker linemarker-9">where <span class="math notranslate nohighlight">\(\mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([-2 \sigma, 2 \sigma]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the Gaussian distribution (default is 1.0)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.InverseWignerSemicircle.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.InverseWignerSemicircle.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.InverseWignerSemicircle.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.InverseWignerSemicircle.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.MarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">MarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#MarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.MarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">A Marchenko-Pastur probability density function.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.MarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.MarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.MarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.MarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedInverseMarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">TranslatedInverseMarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#TranslatedInverseMarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.TranslatedInverseMarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.InverseMarchenkoPastur" title="ssd.distributions.InverseMarchenkoPastur"><code class="xref py py-class docutils literal notranslate"><span class="pre">InverseMarchenkoPastur</span></code></a></p>
+<p class="linemarker linemarker-1">An inverse Marchenko-Pastur probability density function with lowest eigenvalue at zero.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedInverseMarchenkoPastur.m2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">m2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.TranslatedInverseMarchenkoPastur.m2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedInverseMarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.TranslatedInverseMarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedInverseMarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.TranslatedInverseMarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedMarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">TranslatedMarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#TranslatedMarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.TranslatedMarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.MarchenkoPastur" title="ssd.distributions.MarchenkoPastur"><code class="xref py py-class docutils literal notranslate"><span class="pre">MarchenkoPastur</span></code></a></p>
+<p class="linemarker linemarker-1">A Marchenko-Pastur probability density function with lowest eigenvalue at zero.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedMarchenkoPastur.l0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">l0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.TranslatedMarchenkoPastur.l0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedMarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.TranslatedMarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.TranslatedMarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.TranslatedMarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.distributions.WignerSemicircle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.distributions.</span></span><span class="sig-name descname"><span class="pre">WignerSemicircle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#WignerSemicircle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.distributions.WignerSemicircle" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">A Wigner semicircle probability density function.</p>
+<p class="linemarker linemarker-3">The Wigner semicircle (WS) distribution is a probability density function that describes the asymptotic distribution of the eigenvalues of a large symmetric random matrix with Gaussian entries. Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times n\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span>, the WS distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \sqrt{4 \sigma^2 - x^2} \mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\]</div>
+<p class="linemarker linemarker-9">where <span class="math notranslate nohighlight">\(\mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([-2 \sigma, 2 \sigma]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the Gaussian distribution (default is 1.0)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.WignerSemicircle.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.WignerSemicircle.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.distributions.WignerSemicircle.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.distributions.WignerSemicircle.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ssd.ssd">
+<span id="ssd-ssd-module"></span><h2>ssd.ssd module<a class="headerlink" href="#module-ssd.ssd" title="Permalink to this heading"></a></h2>
+<p class="linemarker linemarker-1">SSD - PDE</p>
+<p class="linemarker linemarker-3">The PDE module contains the class for the differential equation encoding the behaviour of the renormalization group.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.ssd.SSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.ssd.</span></span><span class="sig-name descname"><span class="pre">SSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><span class="pre">BaseDistribution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-09</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BoundaryAxisBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BoundaryAxisBase</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto_periodic_neumann'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/ssd.html#SSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.ssd.SSD" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PDEBase</span></code></p>
+<p class="linemarker linemarker-1">Stochastic Signal Detection (SSD)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dist</strong> (<a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><em>BaseDistribution</em></a>) – Distribution of the signal</p></li>
+<li><p><strong>noise</strong> (<em>float</em>) – Noise intensity (default is 0.0)</p></li>
+<li><p><strong>epsilon</strong> (<em>float</em>) – Small number to avoid division by zero (default is 1.e-9)</p></li>
+<li><p><strong>bc</strong> (<em>BoundariesData</em>) – Boundary conditions (default is ‘auto_periodic_neumann’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the lower bound of the energy scale is negative</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.ssd.SSD.evolution_rate">
+<span class="sig-name descname"><span class="pre">evolution_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ScalarField</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ScalarField</span></span></span><a class="reference internal" href="../_modules/ssd/ssd.html#SSD.evolution_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.ssd.SSD.evolution_rate" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Compute the evolution rate of the differential equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>state</strong> (<em>ScalarField</em>) – The state of the field</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – The current time (default is 0)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The evolution rate of the field at the given time</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ScalarField</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.ssd.SSD.expression">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">expression</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ssd.ssd.SSD.expression" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Return the expression for the PDE.</p>
+<div class="math notranslate nohighlight">
+\[\dot{\bar{\mathcal{U_k^\prime}}}[\bar{\chi}] = - \mathrm{dim}_{\tau}(\bar{\mathcal{U_k^\prime}})\, \bar{\mathcal{U_k^\prime}}[\bar{\chi}] + \mathrm{dim}_{\tau}(\chi)\, \bar{\chi}\, \bar{\mathcal{U_k^{\prime\prime}}}[\bar{\chi}] -2 \frac{3\, \bar{\mathcal{U_k^{\prime\prime}}}[\bar{\chi}] + 2\, \bar{\chi}\, \bar{\mathcal{U_k^{\prime\prime\prime}}}[\bar{\chi}]}{(1 + \bar{\mu}^2)^2}\]</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ssd">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ssd" title="Permalink to this heading"></a></h2>
+<p class="linemarker linemarker-1">SSD: Stochastic Signal Detection</p>
+<p class="linemarker linemarker-3">A Python package for the detection of signals using stochastic processes</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.EmpiricalDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">EmpiricalDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bw_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#EmpiricalDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.EmpiricalDistribution" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">Estimate an empirical distribution using a Gaussian KDE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bw_method</strong> (<em>str</em><em>, </em><em>float</em><em>, or </em><em>callable</em><em>, </em><em>optional</em>) – The method used to calculate the estimator bandwidth. This can be ‘scott’, ‘silverman’, a scalar constant or a callable. If a scalar, this will be used directly as <cite>kde.factor</cite>. If a callable, it should take a <cite>gaussian_kde</cite> instance as only parameter and return a scalar. If None (default), ‘scott’ is used. See <code class="docutils literal notranslate"><span class="pre">scipy.stats.gaussian_kde</span></code> for more details.</p></li>
+<li><p><strong>weights</strong> (<em>array_like</em><em>, </em><em>optional</em>) – The weights for each value in the empirical distribution. This must be the same shape as the input data. See <code class="docutils literal notranslate"><span class="pre">scipy.stats.gaussian_kde</span></code> for more details.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.EmpiricalDistribution.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ssd.distributions.EmpiricalDistribution" title="ssd.distributions.EmpiricalDistribution"><span class="pre">EmpiricalDistribution</span></a></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#EmpiricalDistribution.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.EmpiricalDistribution.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>array_like</em>) – The data to fit</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted empirical distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ssd.EmpiricalDistribution" title="ssd.EmpiricalDistribution">EmpiricalDistribution</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.EmpiricalDistribution.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><a class="headerlink" href="#ssd.EmpiricalDistribution.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.EmpiricalDistribution.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><a class="headerlink" href="#ssd.EmpiricalDistribution.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.HistogramDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">HistogramDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.HistogramDistribution" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">Use a histogram to estimate a probability density function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bins</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>Iterable</em><em>[</em><em>float</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – The number of bins to use in the histogram (default is 100). If an iterable is provided, it will be used as the bin edges.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.HistogramDistribution.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ssd.distributions.HistogramDistribution" title="ssd.distributions.HistogramDistribution"><span class="pre">HistogramDistribution</span></a></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.HistogramDistribution.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>array_like</em>) – The data to fit</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted histogram distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ssd.HistogramDistribution" title="ssd.HistogramDistribution">HistogramDistribution</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.HistogramDistribution.grad">
+<span class="sig-name descname"><span class="pre">grad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution.grad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.HistogramDistribution.grad" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Compute the derivative of the probability density function at a given point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>float</em>) – The point at which to compute the derivative</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the derivative at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.HistogramDistribution.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#HistogramDistribution.integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.HistogramDistribution.integrate" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Integrate the probability density function from a to b.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>float</em><em>, </em><em>optional</em>) – The lower bound of the integration (default is -inf)</p></li>
+<li><p><strong>b</strong> (<em>float</em><em>, </em><em>optional</em>) – The upper bound of the integration (default is inf)</p></li>
+<li><p><strong>moment</strong> (<em>float</em><em>, </em><em>optional</em>) – The moment to compute (default is 0)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the integral and the error</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.InterpolateDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">InterpolateDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#InterpolateDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.InterpolateDistribution" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">Use a histogram distribution with interpolated values to estimate a probability density function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bins</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>Iterabl</em><em>[</em><em>float</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – The number of bins to use in the histogram (default is 100). If an iterable is provided, it will be used as the bin edges.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.InterpolateDistribution.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_origin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ssd.distributions.InterpolateDistribution" title="ssd.distributions.InterpolateDistribution"><span class="pre">InterpolateDistribution</span></a></span></span><a class="reference internal" href="../_modules/ssd/distributions.html#InterpolateDistribution.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.InterpolateDistribution.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array_like</em>) – The data to fit</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – The degree of the interpolating polynomial (default is 1)</p></li>
+<li><p><strong>s</strong> (<em>float</em><em>, </em><em>optional</em>) – The smoothing factor (default is 0.01)</p></li>
+<li><p><strong>force_origin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Force the interpolating polynomial to pass through the origin (default is False)</p></li>
+<li><p><strong>epsilon</strong> (<em>float</em><em>, </em><em>optional</em>) – Small number to avoid division by zero (default is 1.e-9)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted histogram distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ssd.HistogramDistribution" title="ssd.HistogramDistribution">HistogramDistribution</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.InverseMarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">InverseMarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#InverseMarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.InverseMarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.MarchenkoPastur" title="ssd.distributions.MarchenkoPastur"><code class="xref py py-class docutils literal notranslate"><span class="pre">MarchenkoPastur</span></code></a></p>
+<p class="linemarker linemarker-1">An inverse Marchenko-Pastur probability density function.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.InverseMarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.InverseMarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.InverseMarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.InverseMarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.InverseWignerSemicircle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">InverseWignerSemicircle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#InverseWignerSemicircle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.InverseWignerSemicircle" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.WignerSemicircle" title="ssd.distributions.WignerSemicircle"><code class="xref py py-class docutils literal notranslate"><span class="pre">WignerSemicircle</span></code></a></p>
+<p class="linemarker linemarker-1">An inverse Wigner semicircle probability density function.</p>
+<p class="linemarker linemarker-3">The Wigner semicircle (WS) distribution is a probability density function that describes the asymptotic distribution of the eigenvalues of a large symmetric random matrix with Gaussian entries. Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times n\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span>, the WS distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \sqrt{4 \sigma^2 - x^2} \mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\]</div>
+<p class="linemarker linemarker-9">where <span class="math notranslate nohighlight">\(\mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([-2 \sigma, 2 \sigma]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the Gaussian distribution (default is 1.0)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.InverseWignerSemicircle.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.InverseWignerSemicircle.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.InverseWignerSemicircle.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.InverseWignerSemicircle.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.MarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">MarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#MarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.MarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">A Marchenko-Pastur probability density function.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.MarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.MarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.MarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.MarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.SSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">SSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><span class="pre">BaseDistribution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-09</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BoundaryAxisBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BCBase</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BoundaryAxisBase</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto_periodic_neumann'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/ssd.html#SSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.SSD" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PDEBase</span></code></p>
+<p class="linemarker linemarker-1">Stochastic Signal Detection (SSD)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dist</strong> (<a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><em>BaseDistribution</em></a>) – Distribution of the signal</p></li>
+<li><p><strong>noise</strong> (<em>float</em>) – Noise intensity (default is 0.0)</p></li>
+<li><p><strong>epsilon</strong> (<em>float</em>) – Small number to avoid division by zero (default is 1.e-9)</p></li>
+<li><p><strong>bc</strong> (<em>BoundariesData</em>) – Boundary conditions (default is ‘auto_periodic_neumann’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the lower bound of the energy scale is negative</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ssd.SSD.evolution_rate">
+<span class="sig-name descname"><span class="pre">evolution_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ScalarField</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ScalarField</span></span></span><a class="reference internal" href="../_modules/ssd/ssd.html#SSD.evolution_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.SSD.evolution_rate" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Compute the evolution rate of the differential equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>state</strong> (<em>ScalarField</em>) – The state of the field</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – The current time (default is 0)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The evolution rate of the field at the given time</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ScalarField</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.SSD.expression">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">expression</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ssd.SSD.expression" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Return the expression for the PDE.</p>
+<div class="math notranslate nohighlight">
+\[\dot{\bar{\mathcal{U_k^\prime}}}[\bar{\chi}] = - \mathrm{dim}_{\tau}(\bar{\mathcal{U_k^\prime}})\, \bar{\mathcal{U_k^\prime}}[\bar{\chi}] + \mathrm{dim}_{\tau}(\chi)\, \bar{\chi}\, \bar{\mathcal{U_k^{\prime\prime}}}[\bar{\chi}] -2 \frac{3\, \bar{\mathcal{U_k^{\prime\prime}}}[\bar{\chi}] + 2\, \bar{\chi}\, \bar{\mathcal{U_k^{\prime\prime\prime}}}[\bar{\chi}]}{(1 + \bar{\mu}^2)^2}\]</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.TranslatedInverseMarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">TranslatedInverseMarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#TranslatedInverseMarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.TranslatedInverseMarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.InverseMarchenkoPastur" title="ssd.distributions.InverseMarchenkoPastur"><code class="xref py py-class docutils literal notranslate"><span class="pre">InverseMarchenkoPastur</span></code></a></p>
+<p class="linemarker linemarker-1">An inverse Marchenko-Pastur probability density function with lowest eigenvalue at zero.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.TranslatedInverseMarchenkoPastur.m2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">m2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.TranslatedInverseMarchenkoPastur.m2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.TranslatedInverseMarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.TranslatedInverseMarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.TranslatedInverseMarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.TranslatedInverseMarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.TranslatedMarchenkoPastur">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">TranslatedMarchenkoPastur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#TranslatedMarchenkoPastur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.TranslatedMarchenkoPastur" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.distributions.MarchenkoPastur" title="ssd.distributions.MarchenkoPastur"><code class="xref py py-class docutils literal notranslate"><span class="pre">MarchenkoPastur</span></code></a></p>
+<p class="linemarker linemarker-1">A Marchenko-Pastur probability density function with lowest eigenvalue at zero.</p>
+<p class="linemarker linemarker-3">The Marchenko-Pastur (MP) distribution is a probability density function that describes the asymptotic distribution of the singular values of a large rectangular random matrix with Gaussian entries (i.e. the eigenvalues of the associated covariance matrix). Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times p\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span> and <span class="math notranslate nohighlight">\(p \to \infty\)</span>, such that <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n} \in (0, 1)\)</span>, the MP distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \frac{\sqrt{(\lambda_+ - x)(x - \lambda_-)}}{\lambda x} \mathbb{1}_{[x_-, x_+]}(x)\]</div>
+<p class="linemarker linemarker-9">where</p>
+<div class="math notranslate nohighlight">
+\[\lambda_+ = \sigma^2 (1 + \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-15">and</p>
+<div class="math notranslate nohighlight">
+\[\lambda_- = \sigma^2 (1 - \sqrt{\lambda})^2\]</div>
+<p class="linemarker linemarker-21">are the upper and lower bounds of the function, respectively, and <span class="math notranslate nohighlight">\(\mathbb{1}_{[x_-, x_+]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([x_-, x_+]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> (<em>float</em>) – The ratio <span class="math notranslate nohighlight">\(\lambda = \frac{p}{n}\)</span>, where <span class="math notranslate nohighlight">\(p\)</span> is the number of variables and <span class="math notranslate nohighlight">\(n\)</span> is the number of observations of the random matrix.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the random matrix. The default is 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.TranslatedMarchenkoPastur.l0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">l0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.TranslatedMarchenkoPastur.l0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.TranslatedMarchenkoPastur.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.TranslatedMarchenkoPastur.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.TranslatedMarchenkoPastur.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.TranslatedMarchenkoPastur.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ssd.WignerSemicircle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ssd.</span></span><span class="sig-name descname"><span class="pre">WignerSemicircle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ssd/distributions.html#WignerSemicircle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ssd.WignerSemicircle" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <a class="reference internal" href="#ssd.base.BaseDistribution" title="ssd.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p class="linemarker linemarker-1">A Wigner semicircle probability density function.</p>
+<p class="linemarker linemarker-3">The Wigner semicircle (WS) distribution is a probability density function that describes the asymptotic distribution of the eigenvalues of a large symmetric random matrix with Gaussian entries. Given a matrix <span class="math notranslate nohighlight">\(X\)</span> of size <span class="math notranslate nohighlight">\(n \times n\)</span>, where <span class="math notranslate nohighlight">\(n \to \infty\)</span>, the WS distribution is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\mu(x) = \frac{1}{2 \pi \sigma^2} \sqrt{4 \sigma^2 - x^2} \mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\]</div>
+<p class="linemarker linemarker-9">where <span class="math notranslate nohighlight">\(\mathbb{1}_{[-2 \sigma, 2 \sigma]}(x)\)</span> is the indicator function of the interval <span class="math notranslate nohighlight">\([-2 \sigma, 2 \sigma]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The standard deviation of the Gaussian distribution (default is 1.0)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.WignerSemicircle.max">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.WignerSemicircle.max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ssd.WignerSemicircle.min">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ssd.WignerSemicircle.min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="Stochastic Signal Detection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ssd.utils.html" class="btn btn-neutral float-right" title="ssd.utils package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Commissariat à l&#39;énergie atomique et aux énergies alternatives.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
