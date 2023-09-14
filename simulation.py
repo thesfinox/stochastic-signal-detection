@@ -7,6 +7,7 @@ Study the behaviour of a Marchenko-Pastur distribution in the presence of a dete
 import argparse
 import logging
 import sys
+import json
 from pathlib import Path
 
 import numpy as np
@@ -58,6 +59,12 @@ def main(args):
 
     logger.addHandler(handler)
     logger.info(f'Initial setup:\n{table}')
+
+    # Generate the values if not provided
+    if args.mu is None:
+        Tc = args.temp[0]
+        T = args.temp[-1]
+        args.mu = [T - Tc, T, T**2]
 
     # Visualize the starting point of the potential
     with plt.style.context('fast', after_reset=True):
@@ -216,6 +223,24 @@ def main(args):
     plt.savefig(output / f'{prefix}_sim_time.pdf')
     plt.close(fig)
 
+    # Save the data of the simulation
+    data = {
+        'rows': int(args.rows),
+        'ratio': float(args.ratio),
+        'rank': int(args.rank),
+        'beta': float(args.beta),
+        'neighbourhood': float(args.a) if args.a is not None else list(map(float,args.bounds)),
+        'mu': list(map(float,args.mu)),
+        'Tc': float(args.temp[0]),
+        'T': float(args.temp[-1]),
+        'max_chi_0': float(np.max(y_0)),
+        'argmax_chi_0': float(t[np.argmax(y_0)]),
+        'max_chi_1': float(np.max(y_1)),
+        'argmax_chi_1': float(t[np.argmax(y_1)]),
+    }
+    with open(output / f'{prefix}.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
     return 0
 
 
@@ -245,11 +270,17 @@ if __name__ == '__main__':
                        type=float,
                        default=None,
                        help='Interval of the mass scale')
-    parser.add_argument('--mu',
-                        type=float,
-                        nargs=3,
-                        default=[0.0, 1.0, 0.0],
-                        help='Mass parameters (quadratic, quartic, 6th power)')
+    temp = parser.add_mutually_exclusive_group(required=True)
+    temp.add_argument('--mu',
+                      type=float,
+                      nargs=3,
+                      default=None,
+                      help='Mass parameters (quadratic, quartic, 6th power)')
+    temp.add_argument('--temp',
+                      type=float,
+                      nargs=2,
+                      default=None,
+                      help='Temperature (critical, considered)')
     parser.add_argument('--rank',
                         type=int,
                         default=2500,
