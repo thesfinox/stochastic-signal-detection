@@ -5,6 +5,7 @@
 *.sqlite
 sim_*
 result*
+visualization/*
 docs/source/_build/*
 
 # VSCode
