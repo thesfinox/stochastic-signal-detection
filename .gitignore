@@ -1,10 +1,11 @@
 # Artifact files
 *.mp4
 *.pdf
-sim_analytical*
-sim_empirical*
-sim_signal*
+*.db
+*.sqlite
+sim_*
 result*
+docs/source/_build/*
 
 # VSCode
 .vscode/

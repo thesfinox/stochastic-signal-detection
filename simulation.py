@@ -6,8 +6,9 @@ Study the behaviour of a Marchenko-Pastur distribution in the presence of a dete
 """
 import argparse
 import logging
+import sqlite3
 import sys
-import json
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -15,14 +16,11 @@ from matplotlib import pyplot as plt
 from pde import CartesianGrid, MemoryStorage, ScalarField
 from tabulate import tabulate
 
-from ssd import (SSD,
-                 InterpolateDistribution,
-                 MarchenkoPastur,
+from ssd import (SSD, InterpolateDistribution, MarchenkoPastur,
                  TranslatedInverseMarchenkoPastur)
 from ssd.utils.matrix import create_bulk, create_signal
 from ssd.utils.plots import (plot_inverse_mp_distribution,
-                             plot_mp_distribution,
-                             plot_potential)
+                             plot_mp_distribution, plot_potential)
 
 __author__ = 'Riccardo Finotello'
 __email__ = 'riccardo.finotello@cea.fr'
@@ -34,7 +32,7 @@ def main(args):
 
     # Print the command line arguments
     parameters = vars(args)
-    keys = list(parameters.keys())[1:]
+    keys = list(parameters.keys())[3:]
     values = [parameters[key] for key in keys]
     table = tabulate(parameters.items(),
                      tablefmt='fancy_grid',
@@ -65,17 +63,21 @@ def main(args):
         Tc = args.temp[0]
         T = args.temp[-1]
         args.mu = [T - Tc, T, T**2]
+    if args.temp is None:
+        Tc = None
+        T = None
 
     # Visualize the starting point of the potential
-    with plt.style.context('fast', after_reset=True):
-        plot_potential(args.xinf,
-                       args.xsup,
-                       args.nval,
-                       args.mu[0],
-                       args.mu[1],
-                       args.mu[2],
-                       output,
-                       prefix)
+    if args.debug:
+        with plt.style.context('fast', after_reset=True):
+            plot_potential(args.xinf,
+                           args.xsup,
+                           args.nval,
+                           args.mu[0],
+                           args.mu[1],
+                           args.mu[2],
+                           output,
+                           prefix)
 
     # Create a random matrix (bulk distribution) and a signal matrix
     Z = create_bulk(rows=args.rows, ratio=args.ratio, random_state=args.seed)
@@ -103,9 +105,10 @@ def main(args):
 
     # Plot the Marchenko-Pastur distribution
     mp = MarchenkoPastur(L=args.ratio)
-    x = np.linspace(0, E.max() * 1.1, num=10000)
-    y_0 = np.array([mp(xi) for xi in x])
-    plot_mp_distribution(E, x, y_0, args.nbins, output, prefix)
+    if args.debug:
+        x = np.linspace(0, E.max() * 1.1, num=10000)
+        y_0 = np.array([mp(xi) for xi in x])
+        plot_mp_distribution(E, x, y_0, args.nbins, output, prefix)
 
     # Find the mass scale of the noise
     if args.a is not None:
@@ -127,19 +130,20 @@ def main(args):
     bins = args.nbins**2  # increase number of bins for resolution
     dist = InterpolateDistribution(bins=bins)  # empirical distribution
     dist = dist.fit(E_inv, n=2, s=args.smooth, force_origin=True)
-    mp_inv = TranslatedInverseMarchenkoPastur(L=args.ratio)
-    x = np.linspace(0, E_inv.max() * 1.1, num=25000)
-    y_dist = np.array([dist(xi) for xi in x])
-    y_0 = np.array([mp_inv(xi) for xi in x])
-    plot_inverse_mp_distribution(E_inv,
-                                 x,
-                                 y_0,
-                                 y_dist,
-                                 mass_scale_bottom,
-                                 mass_scale_top,
-                                 bins,
-                                 output,
-                                 prefix)
+    if args.debug:
+        mp_inv = TranslatedInverseMarchenkoPastur(L=args.ratio)
+        x = np.linspace(0, E_inv.max() * 1.1, num=25000)
+        y_dist = np.array([dist(xi) for xi in x])
+        y_0 = np.array([mp_inv(xi) for xi in x])
+        plot_inverse_mp_distribution(E_inv,
+                                     x,
+                                     y_0,
+                                     y_dist,
+                                     mass_scale_bottom,
+                                     mass_scale_top,
+                                     bins,
+                                     output,
+                                     prefix)
 
     # Define the grid
     grid = CartesianGrid(
@@ -169,77 +173,189 @@ def main(args):
     _ = eq.solve(state, t_range=t_range, dt=dt, tracker=trackers)
 
     # Visualize the simulation at fixed time steps
-    fig, ax = plt.subplots(nrows=len(storage_viz), figsize=(8, 6), sharex=True)
-    cmap = plt.get_cmap('tab10')
-    for n, (time, field) in enumerate(storage_viz.items()):
+    if args.debug:
+        fig, ax = plt.subplots(nrows=len(storage_viz), figsize=(8, 6), sharex=True)
+        cmap = plt.get_cmap('tab10')
+        for n, (time, field) in enumerate(storage_viz.items()):
 
-        # Collect data
-        x = field.grid.axes_coords[0]
-        y_0 = field.data
+            # Collect data
+            x = field.grid.axes_coords[0]
+            y_0 = field.data
 
-        # Plot the field
-        ax[n].plot(x, y_0, color=cmap(n), label=rf'$\tau$ = {time:.3f}')
-        ax[n].set_xlabel(r'$\overline{\chi}$')
-        ax[n].set_ylabel(r'$\overline{\mathcal{U}}^{~\prime}$')
-        ax[n].legend(loc='best')
-        ax[n].ticklabel_format(axis='y',
-                               style='sci',
-                               scilimits=(0, 0),
-                               useMathText=True)
-    plt.savefig(output / f'{prefix}_sim.pdf')
-    plt.close(fig)
+            # Plot the field
+            ax[n].plot(x, y_0, color=cmap(n), label=f'k = {time:.3f}')
+            ax[n].set_xlabel(r'$\overline{\chi}$')
+            ax[n].set_ylabel(r'$\overline{\mathcal{U}}^{~\prime}$')
+            ax[n].legend(loc='best')
+            ax[n].ticklabel_format(axis='y',
+                                   style='sci',
+                                   scilimits=(0, 0),
+                                   useMathText=True)
+        plt.savefig(output / f'{prefix}_sim.pdf')
+        plt.close(fig)
 
     # Visualize the evolution of the field in a given position
     t = []
     y_0 = []
     y_1 = []
+    frac = []
     for time, field in storage.items():
 
         # Collect data
         t.append(time)
         y_0.append(field.data[0])
         y_1.append(field.data[-1])
+        frac.append(1 - field.data[0] / field.data[-1])
         logger.debug(
             f't = {time:.3f}, y0 = {field.data[0]:.3f}, y1 = {field.data[-1]:.3f}'
         )
-    fig, ax = plt.subplots(ncols=2, figsize=(16, 6))
-    ax[0].plot(t, y_0, 'k-')
-    ax[0].set_xlabel('k')
-    ax[0].invert_xaxis()
-    ax[0].set_ylabel(rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{args.xinf}]$')
-    ax[0].ticklabel_format(axis='y',
-                           style='sci',
-                           scilimits=(0, 0),
-                           useMathText=True)
-    ax[1].plot(t, y_1, 'k-')
-    ax[1].set_xlabel('k')
-    ax[1].invert_xaxis()
-    ax[1].set_ylabel(rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{args.xsup}]$')
-    ax[1].ticklabel_format(axis='y',
-                           style='sci',
-                           scilimits=(0, 0),
-                           useMathText=True)
-    plt.tight_layout()
-    plt.savefig(output / f'{prefix}_sim_time.pdf')
-    plt.close(fig)
+
+    if args.debug:
+        fig, ax = plt.subplots(ncols=2, figsize=(16, 6))
+        ax[0].plot(t, y_0, 'k-')
+        ax[0].set_xlabel('k')
+        ax[0].invert_xaxis()
+        ax[0].set_ylabel(
+            rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{args.xinf}]$')
+        ax[0].ticklabel_format(axis='y',
+                               style='sci',
+                               scilimits=(0, 0),
+                               useMathText=True)
+        ax[1].plot(t, y_1, 'k-')
+        ax[1].set_xlabel('k')
+        ax[1].invert_xaxis()
+        ax[1].set_ylabel(
+            rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{args.xsup}]$')
+        ax[1].ticklabel_format(axis='y',
+                               style='sci',
+                               scilimits=(0, 0),
+                               useMathText=True)
+        plt.tight_layout()
+        plt.savefig(output / f'{prefix}_sim_time.pdf')
+        plt.close(fig)
 
     # Save the data of the simulation
+    nmax_chi_0 = int(np.argmax(np.abs(y_0)))
+    nmax_chi_1 = int(np.argmax(np.abs(y_1)))
     data = {
         'rows': int(args.rows),
         'ratio': float(args.ratio),
         'rank': int(args.rank),
         'beta': float(args.beta),
-        'neighbourhood': float(args.a) if args.a is not None else list(map(float,args.bounds)),
-        'mu': list(map(float,args.mu)),
-        'Tc': float(args.temp[0]),
-        'T': float(args.temp[-1]),
-        'max_chi_0': float(np.max(y_0)),
-        'argmax_chi_0': float(t[np.argmax(y_0)]),
-        'max_chi_1': float(np.max(y_1)),
-        'argmax_chi_1': float(t[np.argmax(y_1)]),
+        'mass_scale': float(mass_scale),
+        'mass_scale_bottom': float(mass_scale_bottom),
+        'mass_scale_top': float(mass_scale_top),
+        'mu_0': float(args.mu[0]),
+        'mu_1': float(args.mu[1]),
+        'mu_2': float(args.mu[2]),
+        'Tc': None if Tc is None else float(Tc),
+        'T': None if T is None else float(T),
+        'nmax_chi_0': nmax_chi_0,
+        'max_chi_0': float(y_0[nmax_chi_0]),
+        'argmax_chi_0': float(t[nmax_chi_0]),
+        'nmax_chi_1': nmax_chi_1,
+        'max_chi_1': float(y_1[nmax_chi_1]),
+        'argmax_chi_1': float(t[nmax_chi_1]),
+        'min_frac': float(np.min(frac)),
+        'nmin_frac': int(np.argmin(frac)),
+        'argmin_frac': float(t[np.argmin(frac)]),
     }
-    with open(output / f'{prefix}.json', 'w') as file:
-        json.dump(data, file, indent=4)
+
+    # Store the data in a SQLite database
+    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        with sqlite3.connect(args.db) as conn:
+
+            # Create a cursor
+            cursor = conn.cursor()
+
+            # Create the table if it does not exist
+            sql_query = f"""CREATE TABLE IF NOT EXISTS {args.table} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME,
+                seed INTEGER,
+                rows INTEGER,
+                ratio REAL,
+                rank INTEGER,
+                beta REAL,
+                mass_scale REAL,
+                mass_scale_bottom REAL,
+                mass_scale_top REAL,
+                mu_0 REAL,
+                mu_1 REAL,
+                mu_2 REAL,
+                Tc REAL,
+                T REAL,
+                nmax_chi_0 INTEGER,
+                max_chi_0 REAL,
+                argmax_chi_0 REAL,
+                nmax_chi_1 INTEGER,
+                max_chi_1 REAL,
+                argmax_chi_1 REAL,
+                min_frac REAL,
+                nmin_frac INTEGER,
+                argmin_frac REAL
+            )"""
+            cursor.execute(sql_query)
+
+            # Insert the data from the dictionary
+            sql_query = f"""INSERT INTO {args.table} (
+                timestamp,
+                seed,
+                rows,
+                ratio,
+                rank,
+                beta,
+                mass_scale,
+                mass_scale_bottom,
+                mass_scale_top,
+                mu_0,
+                mu_1,
+                mu_2,
+                Tc,
+                T,
+                nmax_chi_0,
+                max_chi_0,
+                argmax_chi_0,
+                nmax_chi_1,
+                max_chi_1,
+                argmax_chi_1,
+                min_frac,
+                nmin_frac,
+                argmin_frac
+            ) VALUES (
+                '{date}',
+                {int(args.seed)},
+                {data['rows']},
+                {data['ratio']},
+                {data['rank']},
+                {data['beta']},
+                {data['mass_scale']},
+                {data['mass_scale_bottom']},
+                {data['mass_scale_top']},
+                {data['mu_0']},
+                {data['mu_1']},
+                {data['mu_2']},
+                {data['Tc']},
+                {data['T']},
+                {data['nmax_chi_0']},
+                {data['max_chi_0']},
+                {data['argmax_chi_0']},
+                {data['nmax_chi_1']},
+                {data['max_chi_1']},
+                {data['argmax_chi_1']},
+                {data['min_frac']},
+                {data['nmin_frac']},
+                {data['argmin_frac']}
+            )"""
+            cursor.execute(sql_query)
+
+    except sqlite3.Error as e:
+        logger.error(e)
+        return 1
+
+    finally:
+        conn.close()
 
     return 0
 
@@ -252,6 +368,14 @@ if __name__ == '__main__':
                         type=str,
                         default='sim_behaviour',
                         help='Output directory')
+    parser.add_argument('--db',
+                        type=str,
+                        default='simulation.db',
+                        help='Database file')
+    parser.add_argument('--table',
+                        type=str,
+                        default='simulation',
+                        help='Table name')
     parser.add_argument('--rows',
                         type=int,
                         default=7500,
