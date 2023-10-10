@@ -370,7 +370,7 @@ if __name__ == '__main__':
                         help='Output directory')
     parser.add_argument('--db',
                         type=str,
-                        default='simulation.db',
+                        default='simulation.sqlite',
                         help='Database file')
     parser.add_argument('--table',
                         type=str,

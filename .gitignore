@@ -1,12 +1,15 @@
 # Artifact files
+*.db
 *.mp4
 *.pdf
-*.db
 *.sqlite
-sim_*
-result*
-visualization/*
 docs/source/_build/*
+formulae*
+output*
+pictures*
+result*
+sim_*
+visualization*
 
 # VSCode
 .vscode/

@@ -7,7 +7,6 @@ The PDE module contains the class for the differential equation encoding the beh
 from pde import PDEBase, ScalarField
 from .base import BaseDistribution
 from pde.grids.boundaries.axes import BoundariesData
-import numpy as np
 
 
 class SSD(PDEBase):
