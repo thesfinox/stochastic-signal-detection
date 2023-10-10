@@ -27,7 +27,19 @@ source activate venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Notice that the code depends crucially on [`py-pde`](https://py-pde.readthedocs.io/en/latest/).
+
 At the time of writing, `python==3.10.12` was used for the development.
+
+## Documentation
+
+The documentation can be built using `sphinx` (`pip install sphinx sphinx_rtd_theme`):
+
+```bash
+sphinx-build -b html docs/source <build directory>
+```
+
+You will be able to open the file `<build directory>/index.html` in your browser.
 
 ## Tutorials
 

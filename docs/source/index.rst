@@ -7,6 +7,8 @@
 
 .. include:: requirements.rst
 
+.. include:: documentation.rst
+
 .. include:: tutorials.rst
 
 .. toctree::
