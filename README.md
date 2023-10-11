@@ -13,7 +13,7 @@ It is notably the case of signal detection in almost continuous spectra when the
 This paper follows a recent bibliographic line which tackles this issue with field-theoretical methods.
 Previous analysis focused on equilibrium Boltzmann distributions for some effective field representing the degrees of freedom of data.
 It was possible to establish a relation between signal detection and $`\mathbb{Z}_2`$-symmetry breaking.
-In this paper, we consider a stochastic field framework inspiring by the so-called ``Model A'', and show that the ability to reach or not an equilibrium state is correlated with the shape of the dataset.
+In this paper, we consider a stochastic field framework inspiring by the so-called "Model A", and show that the ability to reach or not an equilibrium state is correlated with the shape of the dataset.
 In particular, studying the renormalization group of the model, we show that the weak ergodicity prescription is always broken for signals small enough, when the data distribution is close to the Marchenko-Pastur (MP) law.
 This, in particular, enables the definition of a detection threshold in the regime where the signal-to-noise ratio is small enough.
 
