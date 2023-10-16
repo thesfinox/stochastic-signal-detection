@@ -14,15 +14,20 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 
-from ssd import __version__, __author__
-
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Stochastic Signal Detection (SSD)'
 copyright = '2023, Commissariat à l\'énergie atomique et aux énergies alternatives'
-author = __author__
-release = __version__
+release = 'v1.0.0'
+__author__ = ', '.join([
+    'Harold Erbin',
+    'Riccardo Finotello',
+    'Bio Wahabou Kpera',
+    'Vincent Lahoche',
+    'Dine Ousmane Samary',
+])
+
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
