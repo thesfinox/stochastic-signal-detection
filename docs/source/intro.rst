@@ -4,13 +4,13 @@ Stochastic Signal Detection (SSD)
     | `Harold Erbin <mailto:harold.erbin@cea.fr>`_, `Riccardo Finotello <mailto:riccardo.finotello@cea.fr>`_, `Bio Wahabou Kpera <mailto:wahaboukpera@gmail.com>`_, `Vincent Lahoche <mailto:vincent.lahoche@cea.fr>`_, `Dine Ousmane Samary <mailto:dine.ousmanesamary@cipma.uac.bj>`_
     | |arxiv|_ |github|_
 
-.. |arxiv| image:: https://img.shields.io/badge/arxiv-2023.XXXXX-red
+.. |arxiv| image:: https://img.shields.io/badge/arxiv-2023.07499-red
    :alt: arXiv.org
-.. _arxiv: https://arxiv.org/abs/2023.XXXXX
+.. _arxiv: https://arxiv.org/abs/2310.07499
 
 .. |github| image:: https://img.shields.io/badge/github-stochastic--signal--detection-blue?logo=github
    :alt: github.com
-.. _github: https://github.com/xxxxxx/stochastic-signal-detection
+.. _github: https://github.com/thesfinox/stochastic-signal-detection
 
 
 Signal detection is one of the main challenges of data science.
