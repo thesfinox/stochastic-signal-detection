@@ -5,8 +5,9 @@ SSD - PDE
 The PDE module contains the class for the differential equation encoding the behaviour of the renormalization group.
 """
 from pde import PDEBase, ScalarField
-from .base import BaseDistribution
 from pde.grids.boundaries.axes import BoundariesData
+
+from .base import BaseDistribution
 
 
 class SSD(PDEBase):
@@ -98,7 +99,7 @@ class SSD(PDEBase):
         Q2 = -2 * num / (den + self.epsilon)
 
         # Compute the final result
-        result = -k * self.dist(k2) * (Q1+Q2) / (_I + self.epsilon)
+        result = k * self.dist(k2) * (Q1+Q2) / (_I + self.epsilon)
         result.label = 'SSD'
 
         return result

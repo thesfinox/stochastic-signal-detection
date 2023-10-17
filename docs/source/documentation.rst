@@ -1,5 +1,6 @@
+-------------
 Documentation
-=============
+-------------
 
 The documentation can be built using ``sphinx`` (``pip install sphinx sphinx_rtd_theme``):
 

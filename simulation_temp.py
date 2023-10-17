@@ -16,11 +16,14 @@ from matplotlib import pyplot as plt
 from pde import CartesianGrid, MemoryStorage, ScalarField
 from tabulate import tabulate
 
-from ssd import (SSD, InterpolateDistribution, MarchenkoPastur,
+from ssd import (SSD,
+                 InterpolateDistribution,
+                 MarchenkoPastur,
                  TranslatedInverseMarchenkoPastur)
 from ssd.utils.matrix import create_bulk, create_signal
 from ssd.utils.plots import (plot_inverse_mp_distribution,
-                             plot_mp_distribution, plot_potential)
+                             plot_mp_distribution,
+                             plot_potential)
 
 __author__ = 'Riccardo Finotello'
 __email__ = 'riccardo.finotello@cea.fr'

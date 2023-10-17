@@ -20,14 +20,13 @@ sys.path.insert(0, os.path.abspath("../.."))
 project = 'Stochastic Signal Detection (SSD)'
 copyright = '2023, Commissariat à l\'énergie atomique et aux énergies alternatives'
 release = 'v1.0.0'
-__author__ = ', '.join([
+author = ', '.join([
     'Harold Erbin',
     'Riccardo Finotello',
     'Bio Wahabou Kpera',
     'Vincent Lahoche',
     'Dine Ousmane Samary',
 ])
-
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

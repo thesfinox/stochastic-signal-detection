@@ -174,14 +174,12 @@ class InterpolateDistribution(BaseDistribution):
         # Set the number of bins
         self.bins = bins
 
-    def fit(
-        self,
-        data: Iterable[float],
-        n: int = 1,
-        s: float = 0.01,
-        force_origin: bool = False,
-        epsilon: float = 1.e-9
-    ) -> 'InterpolateDistribution':
+    def fit(self,
+            data: Iterable[float],
+            n: int = 1,
+            s: float = 0.01,
+            force_origin: bool = False,
+            epsilon: float = 1.e-9) -> 'InterpolateDistribution':
         """
         Parameters
         ----------

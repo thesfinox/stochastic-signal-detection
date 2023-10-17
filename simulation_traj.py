@@ -5,18 +5,18 @@ SSD - Stochastic Signal Detection
 Study the behaviour of a Marchenko-Pastur distribution in the presence of a deterministic signal.
 """
 import argparse
+import json
 import logging
 import sqlite3
 import sys
-import json
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.patches import Ellipse
 from pde import CartesianGrid, MemoryStorage, ScalarField
 from tabulate import tabulate
-from matplotlib.patches import Ellipse
 
 from ssd import (SSD,
                  InterpolateDistribution,
@@ -266,7 +266,7 @@ def main(args):
         # Store the parameters
         k2 = time**2
         I = dist.integrate(0, time, moment=1, power=2)[0]
-        dimU = 2 * I / (k2 + 1.e-9) / (dist(k2) + 1.e-9)
+        dimU = 2 * I / (k2+1.e-9) / (dist(k2) + 1.e-9)
         P = k2 * dist.grad(k2) / (dist(k2) + 1.e-9)
         dimChi = 2 - dimU * (P+2)
         kappas.append(kappa)
@@ -284,7 +284,9 @@ def main(args):
         # Plot the evolution of the field
         fig, ax = plt.subplots(ncols=2, figsize=(16, 6))
         ax[0].plot(k, Up_starts, 'k-')
-        ax[0].set_xlabel(r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$')
+        ax[0].set_xlabel(
+            r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
+        )
         ax[0].invert_xaxis()
         ax[0].set_ylabel(
             rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{args.xinf}]$')
@@ -294,7 +296,9 @@ def main(args):
                                useMathText=True)
 
         ax[1].plot(k, Up_ends, 'k-')
-        ax[1].set_xlabel(r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$')
+        ax[1].set_xlabel(
+            r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
+        )
         ax[1].invert_xaxis()
         ax[1].set_ylabel(
             rf'$\overline{{\mathcal{{U}}}}^{{~\prime}}[{args.xsup}]$')
@@ -310,12 +314,11 @@ def main(args):
         fig, ax = plt.subplots(ncols=4, nrows=2, figsize=(32, 12))
         ax = ax.flatten()
 
-        ax[0].plot(k[25:],
-                   kappas_bar[25:],
-                   'k-',
-                   label='simulated')
+        ax[0].plot(k[25:], kappas_bar[25:], 'k-', label='simulated')
         ax[0].invert_xaxis()
-        ax[0].set_xlabel(r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$')
+        ax[0].set_xlabel(
+            r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
+        )
         ax[0].set_ylabel(r'$\overline{\kappa}$')
         ax[0].ticklabel_format(axis='y',
                                style='sci',
@@ -324,7 +327,9 @@ def main(args):
 
         ax[1].plot(k[25:], kappas[25:], 'k-')
         ax[1].invert_xaxis()
-        ax[1].set_xlabel(r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$')
+        ax[1].set_xlabel(
+            r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
+        )
         ax[1].set_ylabel(r'$\kappa$')
         ax[1].ticklabel_format(axis='y',
                                style='sci',
@@ -332,7 +337,9 @@ def main(args):
                                useMathText=True)
         ax[2].plot(k[25:], mu0s[25:], 'k-')
         ax[2].invert_xaxis()
-        ax[2].set_xlabel(r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$')
+        ax[2].set_xlabel(
+            r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
+        )
         ax[2].set_ylabel(r'$\mu_0$')
         ax[2].ticklabel_format(axis='y',
                                style='sci',
@@ -342,7 +349,9 @@ def main(args):
 
         ax[3].plot(k[25:], mu1s[25:], 'k-')
         ax[3].invert_xaxis()
-        ax[3].set_xlabel(r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$')
+        ax[3].set_xlabel(
+            r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
+        )
         ax[3].set_ylabel(r'$\mu_1$')
         ax[3].ticklabel_format(axis='y',
                                style='sci',
@@ -382,11 +391,11 @@ def main(args):
 
         # Draw an ellipse around the centroid
         ell = Ellipse(xy=(mu0_avg, mu1_avg),
-                        width=mu0_std * 2,
-                        height=mu1_std * 2,
-                        angle=0,
-                        color='r',
-                        alpha=0.25)
+                      width=mu0_std * 2,
+                      height=mu1_std * 2,
+                      angle=0,
+                      color='r',
+                      alpha=0.25)
         ax[6].add_artist(ell)
 
         plt.tight_layout()

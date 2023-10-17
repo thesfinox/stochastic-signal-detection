@@ -1,5 +1,6 @@
-Stochastic Signal Detection (SSD)
-=================================
+--------
+Abstract
+--------
 
     | `Harold Erbin <mailto:harold.erbin@cea.fr>`_, `Riccardo Finotello <mailto:riccardo.finotello@cea.fr>`_, `Bio Wahabou Kpera <mailto:wahaboukpera@gmail.com>`_, `Vincent Lahoche <mailto:vincent.lahoche@cea.fr>`_, `Dine Ousmane Samary <mailto:dine.ousmanesamary@cipma.uac.bj>`_
     | |arxiv| |github| |docs|

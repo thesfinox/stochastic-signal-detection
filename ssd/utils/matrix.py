@@ -4,10 +4,15 @@ SSD - Utilities
 
 Utility functions for the Stochastic Signal Detection project.
 """
-import numpy as np
 from typing import Optional, Union
 
-def create_bulk(rows: int, ratio: float, random_state: Optional[Union[int, np.random.Generator]] = None, **kwargs) -> np.ndarray:
+import numpy as np
+
+
+def create_bulk(rows: int,
+                ratio: float,
+                random_state: Optional[Union[int, np.random.Generator]] = None,
+                **kwargs) -> np.ndarray:
     """
     Create a bulk distribution matrix.
 
@@ -37,7 +42,9 @@ def create_bulk(rows: int, ratio: float, random_state: Optional[Union[int, np.ra
     elif isinstance(random_state, int):
         random_state = np.random.default_rng(random_state)
     elif not isinstance(random_state, np.random.Generator):
-        raise TypeError(f'The random state must be an integer or a numpy.random.Generator object, not {type(random_state)}!')
+        raise TypeError(
+            f'The random state must be an integer or a numpy.random.Generator object, not {type(random_state)}!'
+        )
 
     # Create the bulk distribution matrix
     cols = int(rows * ratio)
@@ -45,7 +52,13 @@ def create_bulk(rows: int, ratio: float, random_state: Optional[Union[int, np.ra
 
     return bulk
 
-def create_signal(rows: int, ratio: float, rank: int, random_state: Optional[Union[int, np.random.Generator]] = None, **kwargs) -> np.ndarray:
+
+def create_signal(rows: int,
+                  ratio: float,
+                  rank: int,
+                  random_state: Optional[Union[int,
+                                               np.random.Generator]] = None,
+                  **kwargs) -> np.ndarray:
     """
     Create a signal matrix.
 
@@ -77,7 +90,9 @@ def create_signal(rows: int, ratio: float, rank: int, random_state: Optional[Uni
     elif isinstance(random_state, int):
         random_state = np.random.default_rng(random_state)
     elif not isinstance(random_state, np.random.Generator):
-        raise TypeError(f'The random state must be an integer or a numpy.random.Generator object, not {type(random_state)}!')
+        raise TypeError(
+            f'The random state must be an integer or a numpy.random.Generator object, not {type(random_state)}!'
+        )
 
     # Create the signal matrix
     cols = int(rows * ratio)

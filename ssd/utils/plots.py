@@ -5,25 +5,27 @@ SSD - plotting utilities
 Some utility functions for plotting and displaying the results of the simulation.
 """
 from typing import Optional
+
+import matplotlib as mpl
 import numpy as np
 from matplotlib import pyplot as plt
-import matplotlib as mpl
-
 
 mpl.use('agg')
 plt.style.use('ggplot')
 plt.rcParams['figure.figsize'] = (8, 6)
 
-def plot_inverse_mp_distribution(evl: list,
-                                 x: list,
-                                 y: list,
-                                 y_dist: list,
-                                 k2min: Optional[float] = None,
-                                 k2max: Optional[float] = None,
-                                 bins: int = 1000,
-                                 output: str = 'output_dir',
-                                 subprefix: str = 'mp_inv_dist',
-                                 ):
+
+def plot_inverse_mp_distribution(
+    evl: list,
+    x: list,
+    y: list,
+    y_dist: list,
+    k2min: Optional[float] = None,
+    k2max: Optional[float] = None,
+    bins: int = 1000,
+    output: str = 'output_dir',
+    subprefix: str = 'mp_inv_dist',
+):
     """
     Plot the inverse Marchenko-Pastur distribution.
 
