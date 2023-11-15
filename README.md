@@ -34,6 +34,8 @@ At the time of writing, `python==3.10.12` was used for the development.
 
 ## Documentation
 
+The full documentation is available at [ReadTheDocs](https://stochastic-signal-detection.readthedocs.io).
+
 The documentation can be built using `sphinx` (`pip install sphinx sphinx_rtd_theme`):
 
 ```bash
