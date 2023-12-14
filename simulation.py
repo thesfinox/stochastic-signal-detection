@@ -227,6 +227,7 @@ def main(args):
     _ = eq.solve(state, t_range=t_range, dt=dt, tracker=trackers)
 
     # Collect the results
+    k_bar_list = []
     k_list = []
     Up_start_list = []
     Up_end_list = []
@@ -240,16 +241,16 @@ def main(args):
 
         # "Time" of the simulation
         if cfg.SIM.IR_TO_UV:
-            k_list.append(k)
+            k_bar_list.append(k)
         else:
-            k_list.append(np.sqrt(m2_top) - k)
+            k_bar_list.append(np.sqrt(m2_top) - k)
 
         # Values of the potential
         Up = Up_data.data
         Up_start_list.append(Up[0])
         Up_end_list.append(Up[-1])
         log.debug(
-            f"k = {k_list[-1]:.5f} => U\'[{cfg.SIM.INF}] = {Up[0]:.3f}, U\'[{cfg.SIM.SUP}] = {Up[-1]:.3f}"
+            f"k = {k_bar_list[-1]:.5f} => U\'[{cfg.SIM.INF}] = {Up[0]:.3f}, U\'[{cfg.SIM.SUP}] = {Up[-1]:.3f}"
         )
 
         # Compute the parameters of the potential, using the expression
@@ -275,7 +276,7 @@ def main(args):
         mu_bar_1_list.append(mu_bar_1)
 
         log.debug(
-            f"k = {k_list[-1]:.5f} => kappa_bar = {kappa_bar:.3f}, mu_bar_0 = {mu_bar_0:.3f}, mu_bar_1 = {mu_bar_1:.3f}"
+            f"k = {k_bar_list[-1]:.5f} => kappa_bar = {kappa_bar:.3f}, mu_bar_0 = {mu_bar_0:.3f}, mu_bar_1 = {mu_bar_1:.3f}"
         )
 
         # Now convert to dimensional quantities
@@ -289,17 +290,23 @@ def main(args):
         I = dist.integrate(0, k, moment=1, power=2)[0]
 
         kappa = kappa_bar * I**2 / k**4 / dist(k**2)
-        kappa_list.append(kappa)
-
         mu_0 = mu_bar_0 * k**6 * dist(k**2) / I**2
-        mu_0_list.append(mu_0)
-
         mu_1 = mu_bar_1 * k**10 * dist(k**2)**2 / I**4
-        mu_1_list.append(mu_1)
 
         log.debug(
-            f"k = {k_list[-1]:.5f} => kappa = {kappa:.3f}, mu_0 = {mu_0:.3f}, mu_1 = {mu_1:.3f}"
+            f"k = {k_bar_list[-1]:.5f} => kappa = {kappa:.3f}, mu_0 = {mu_0:.3f}, mu_1 = {mu_1:.3f}"
         )
+
+        if not np.isnan([kappa, mu_0, mu_1]).any():
+            kappa_list.append(kappa)
+            mu_0_list.append(mu_0)
+            mu_1_list.append(mu_1)
+            if cfg.SIM.IR_TO_UV:
+                k_list.append(k)
+            else:
+                k_list.append(np.sqrt(m2_top) - k)
+        else:
+            log.warning("Found NaN values! Skipping...")
 
     # Add information to the sqlite database
     log.info("Filling database...")
@@ -318,7 +325,6 @@ def main(args):
             seed INTEGER,
             rows INTEGER,
             columns INTEGER,
-            ratio INTEGER,
             beta REAL,
             m2_bot REAL,
             m2_top REAL,
@@ -339,7 +345,6 @@ def main(args):
             seed,
             rows,
             columns,
-            ratio,
             beta,
             m2_bot,
             m2_top,
@@ -352,22 +357,21 @@ def main(args):
             mu_0,
             mu_1
             ) VALUES (
-            {now},
+            '{now}',
             {cfg.INPUT.MATRIX.SEED},
             {cfg.INPUT.MATRIX.ROWS},
             {cfg.INPUT.MATRIX.COLUMNS},
-            {ratio},
             {cfg.INPUT.SIGNAL.RATIO},
             {m2_bot},
             {m2_top},
-            {json.dumps(list(Up_start_list))},
-            {json.dumps(list(Up_end_list))},
-            {json.dumps(list(kappa_bar_list))},
-            {json.dumps(list(mu_bar_0_list))},
-            {json.dumps(list(mu_bar_1_list))},
-            {json.dumps(list(kappa_list))},
-            {json.dumps(list(mu_0_list))},
-            {json.dumps(list(mu_1_list))}
+            '{json.dumps(list(Up_start_list))}',
+            '{json.dumps(list(Up_end_list))}',
+            '{json.dumps(list(kappa_bar_list))}',
+            '{json.dumps(list(mu_bar_0_list))}',
+            '{json.dumps(list(mu_bar_1_list))}',
+            '{json.dumps(list(kappa_list))}',
+            '{json.dumps(list(mu_0_list))}',
+            '{json.dumps(list(mu_1_list))}'
             )"""
             cursor.execute(sql_query)
 
@@ -380,16 +384,16 @@ def main(args):
     # Visualize the results
     log.info("Visualizing the results...")
     fig, ax = plt.subplots(ncols=3, nrows=5, figsize=(40, 18))
-    ax[0, 0].plot(k_list, Up_start_list, 'k-')
-    ax[0, 0].plot([k_list[0]], [Up_start_list[0]], 'ro')
-    ax[0, 0].plot([k_list[-1]], [Up_start_list[-1]], 'bo')
+    ax[0, 0].plot(k_bar_list, Up_start_list, 'k-')
+    ax[0, 0].plot([k_bar_list[0]], [Up_start_list[0]], 'ro')
+    ax[0, 0].plot([k_bar_list[-1]], [Up_start_list[-1]], 'bo')
     ax[0, 0].ticklabel_format(axis='both', style='sci', scilimits=(0, 0))
     ax[0, 0].set_xlabel('k')
     ax[0, 0].set_ylabel(
         rf'$\bar{{\mathcal{{U}}}}^{{\prime}}[\bar{{{cfg.SIM.INF}}}]$')
-    ax[0, 1].plot(k_list, Up_end_list, 'k-')
-    ax[0, 1].plot([k_list[0]], [Up_end_list[0]], 'ro')
-    ax[0, 1].plot([k_list[-1]], [Up_end_list[-1]], 'bo')
+    ax[0, 1].plot(k_bar_list, Up_end_list, 'k-')
+    ax[0, 1].plot([k_bar_list[0]], [Up_end_list[0]], 'ro')
+    ax[0, 1].plot([k_bar_list[-1]], [Up_end_list[-1]], 'bo')
     ax[0, 1].ticklabel_format(axis='both', style='sci', scilimits=(0, 0))
     ax[0, 1].set_xlabel('k')
     ax[0, 1].set_ylabel(
@@ -402,21 +406,21 @@ def main(args):
         rf'$\bar{{\mathcal{{U}}}}^{{\prime}}[\bar{{{cfg.SIM.INF}}}]$')
     ax[0, 2].set_ylabel(
         rf'$\bar{{\mathcal{{U}}}}^{{\prime}}[\bar{{{cfg.SIM.SUP}}}]$')
-    ax[1, 0].plot(k_list, kappa_bar_list, 'k-')
-    ax[1, 0].plot([k_list[0]], [kappa_bar_list[0]], 'ro')
-    ax[1, 0].plot([k_list[-1]], [kappa_bar_list[-1]], 'bo')
+    ax[1, 0].plot(k_bar_list, kappa_bar_list, 'k-')
+    ax[1, 0].plot([k_bar_list[0]], [kappa_bar_list[0]], 'ro')
+    ax[1, 0].plot([k_bar_list[-1]], [kappa_bar_list[-1]], 'bo')
     ax[1, 0].ticklabel_format(axis='both', style='sci', scilimits=(0, 0))
     ax[1, 0].set_xlabel('k')
     ax[1, 0].set_ylabel(r'$\bar{\kappa}$')
-    ax[1, 1].plot(k_list, mu_bar_0_list, 'k-')
-    ax[1, 1].plot([k_list[0]], [mu_bar_0_list[0]], 'ro')
-    ax[1, 1].plot([k_list[-1]], [mu_bar_0_list[-1]], 'bo')
+    ax[1, 1].plot(k_bar_list, mu_bar_0_list, 'k-')
+    ax[1, 1].plot([k_bar_list[0]], [mu_bar_0_list[0]], 'ro')
+    ax[1, 1].plot([k_bar_list[-1]], [mu_bar_0_list[-1]], 'bo')
     ax[1, 1].ticklabel_format(axis='both', style='sci', scilimits=(0, 0))
     ax[1, 1].set_xlabel('k')
     ax[1, 1].set_ylabel(r'$\bar{\mu}_0$')
-    ax[1, 2].plot(k_list, mu_bar_1_list, 'k-')
-    ax[1, 2].plot([k_list[0]], [mu_bar_1_list[0]], 'ro')
-    ax[1, 2].plot([k_list[-1]], [mu_bar_1_list[-1]], 'bo')
+    ax[1, 2].plot(k_bar_list, mu_bar_1_list, 'k-')
+    ax[1, 2].plot([k_bar_list[0]], [mu_bar_1_list[0]], 'ro')
+    ax[1, 2].plot([k_bar_list[-1]], [mu_bar_1_list[-1]], 'bo')
     ax[1, 2].ticklabel_format(axis='both', style='sci', scilimits=(0, 0))
     ax[1, 2].set_xlabel('k')
     ax[1, 2].set_ylabel(r'$\bar{\mu}_1$')
