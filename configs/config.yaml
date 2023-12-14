@@ -1,0 +1,51 @@
+OUTPUT:
+  OUTPUT_DIR: "simulation"
+  DB:
+    OUTPUT_FILE: "simulation.sqlite"
+    TABLE: "simulation"
+INPUT:
+  MATRIX:
+    ROWS: 1000
+    COLUMNS: 800
+    SEED: 42
+  SIGNAL:
+    RATIO: 0.5
+    BY_DET:
+      ENABLED: True
+      RANK: 500
+    BY_IMG:
+      ENABLED: False
+      FILE: "image.png"
+  BINNING:
+    BINS: 1000
+    SMOOTHING: 0.3
+  E_SCALE:
+    BY_VALUE:
+      ENABLED: False
+      MIN: 0.0
+      MAX: 1.0
+    BY_MASS_SCALE:
+      ENABLED: True
+      WIDTH: 0.25
+  INIT:
+    BY_TEMP:
+      ENABLED: False
+      T: 1.0
+      TC: 0.5
+    BY_PARAMS:
+      ENABLED: False
+      MU_0: 1.0
+      MU_1: 1.0
+      MU_2: 0.0
+    BY_INIT:
+      ENABLED: True
+      KAPPA_0: 0.5
+      MU_0: 1.0
+      MU_1: 1.0
+SIM:
+  INF: 0.0
+  SUP: 1.0
+  N_VALUES: 1000
+  N_STEPS: 1000
+  PERIODIC: False
+  IR_TO_UV: False

@@ -6,22 +6,20 @@ A Python package for the detection of signals using stochastic processes
 """
 
 # Import modules
-from .distributions import (
-    EmpiricalDistribution,
-    HistogramDistribution,
-    InterpolateDistribution,
-    InverseMarchenkoPastur,
-    InverseWignerSemicircle,
-    MarchenkoPastur,
-    TranslatedInverseMarchenkoPastur,
-    TranslatedMarchenkoPastur,
-    WignerSemicircle,
-    SpecularReflection,
-)
+from .distributions import (EmpiricalDistribution,
+                            HistogramDistribution,
+                            InterpolateDistribution,
+                            InverseMarchenkoPastur,
+                            InverseWignerSemicircle,
+                            MarchenkoPastur,
+                            SpecularReflection,
+                            TranslatedInverseMarchenkoPastur,
+                            TranslatedMarchenkoPastur,
+                            WignerSemicircle)
 from .ssd import SSD
 
 # Set the version number
-__version__ = '1.0.0'
+__version__ = '2.0.1'
 
 # Set the author information
 __author__ = ', '.join([
