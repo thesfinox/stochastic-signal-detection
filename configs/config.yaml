@@ -15,9 +15,9 @@ INPUT:
       RANK: 500
     BY_IMG:
       ENABLED: False
-      FILE: "image.png"
+      FILE: "cat.jpeg"
   BINNING:
-    BINS: 1000
+    BINS: 100
     SMOOTHING: 0.3
   E_SCALE:
     BY_VALUE:
