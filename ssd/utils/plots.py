@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-SSD - plotting utilities
+Plots
 
 Some utility functions for plotting and displaying the results of the simulation.
 """

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-SSD - PDE
+Partial Differential Equations
 
 The PDE module contains the class for the differential equation encoding the behaviour of the renormalization group.
 """

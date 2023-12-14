@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-SSD - Utilities
+Utilities
 
 Utility functions for the Stochastic Signal Detection project.
 """
