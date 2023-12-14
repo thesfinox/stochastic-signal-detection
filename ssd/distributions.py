@@ -13,6 +13,39 @@ from scipy.stats import gaussian_kde
 from .base import BaseDistribution
 
 
+class SpecularReflection(BaseDistribution):
+    """Reflect the probability density function about the y-axis."""
+
+    def __init__(self, dist: BaseDistribution, shift: float = 0.0):
+        """
+        Parameters
+        ----------
+        dist : BaseDistribution
+            The distribution to reflect
+        shift : float, optional
+            The amount to shift the distribution (default is 0.0)
+        """
+        super().__init__()
+
+        # Set the distribution
+        self.dist = dist
+        self.shift = shift
+
+    def __call__(self, x: float) -> float:
+        """
+        Parameters
+        ----------
+        x : float
+            The point at which to evaluate the probability density function
+
+        Returns
+        -------
+        float
+            The value of the probability density function at the given point
+        """
+        return self.dist(-(x - self.shift))
+
+
 class HistogramDistribution(BaseDistribution):
     """Use a histogram to estimate a probability density function."""
 

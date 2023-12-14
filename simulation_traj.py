@@ -16,11 +16,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.patches import Ellipse
 from pde import CartesianGrid, MemoryStorage, ScalarField
+from PIL import Image
+from scipy.optimize import curve_fit
 from tabulate import tabulate
 
 from ssd import (SSD,
                  InterpolateDistribution,
                  MarchenkoPastur,
+                 SpecularReflection,
                  TranslatedInverseMarchenkoPastur)
 from ssd.utils.matrix import create_bulk, create_signal
 from ssd.utils.plots import (plot_inverse_mp_distribution,
@@ -94,6 +97,9 @@ def main(args):
                       ratio=args.ratio,
                       rank=args.rank,
                       random_state=args.seed)
+    S = Image.open('cat.jpeg')
+    S = S.resize(Z.shape[:2][::-1])
+    S = np.array(S.convert('L')) / 255.0
     logger.debug(f'Z.shape = {Z.shape}')
     logger.debug(f'S.shape = {S.shape}')
     logger.debug(f'beta = {args.beta:.2f}')
@@ -153,6 +159,8 @@ def main(args):
                                      bins,
                                      output,
                                      prefix)
+    if not args.ir_to_uv:
+        dist = SpecularReflection(dist, shift=np.sqrt(mass_scale_top))
 
     ##################################
     #                                #
@@ -171,7 +179,10 @@ def main(args):
     bc = 'periodic' if args.periodic else 'auto_periodic_neumann'
 
     # Initialize a storage
-    t_range = [np.sqrt(mass_scale_bottom), np.sqrt(mass_scale_top)]
+    if args.ir_to_uv:
+        t_range = [np.sqrt(mass_scale_bottom), np.sqrt(mass_scale_top)]
+    else:
+        t_range = [0.0, np.sqrt(mass_scale_top) - np.sqrt(mass_scale_bottom)]
     dt = (t_range[1] - t_range[0]) / args.nsteps
     dt_viz = dt * args.nsteps / 5
     storage = MemoryStorage()
@@ -218,17 +229,18 @@ def main(args):
     # Visualize the evolution of the field in a given position
     def find_params(chi, Up):
 
-        # Find the position of the minimum
-        idx = np.argmin(Up)
+        # Find the position of the minimum of the potential (root of Up)
+        dUp = np.gradient(Up, chi)
+        roots = (np.diff(np.sign(Up)) != 0).nonzero()
+        idx = roots[0][np.argmin(Up[roots])]
         kappa = chi[idx]
 
         # Compute the derivative of the potential and compute in the minimum
-        dUp = np.gradient(Up, chi)
         mu0 = dUp[idx]
 
         # Compute the second der. of the potential and compute in the minimum
         d2Up = np.gradient(dUp, chi)
-        mu1 = d2Up[idx]
+        mu1 = d2Up[idx] / 2.0
 
         return kappa, mu0, mu1
 
@@ -240,10 +252,16 @@ def main(args):
     Up_starts = []
     Up_ends = []
     Up_ratios = []
+    kappa = kappa_0
+    mu0 = mu0_0
+    mu1 = mu1_0
     for time, field in storage.items():
 
         # Collect data
-        k.append(time)
+        if args.ir_to_uv:
+            k.append(time)
+        else:
+            k.append(np.sqrt(mass_scale_top) - time)
         Up_start = field.data[0]
         Up_end = field.data[-1]
         Up_ratio = (Up_end-Up_start) / Up_start
@@ -252,12 +270,13 @@ def main(args):
         Up_ends.append(Up_end)
         Up_ratios.append(np.abs(Up_ratio))
         logger.debug(
-            f'k = {time:.3f}, U\'[{args.xinf}] = {Up_start:.3f}, U\'[{args.xsup}] = {Up_end:.3f}'
+            f'k = {k[-1]:.3f}, U\'[{args.xinf}] = {Up_start:.3f}, U\'[{args.xsup}] = {Up_end:.3f}'
         )
 
         # Find the parameters
         xdata = field.grid.axes_coords[0]
         ydata = field.data
+        # (kappa, mu0, mu1), _ = curve_fit(f, xdata, ydata, p0=[kappa, mu0, mu1])
         kappa, mu0, mu1 = find_params(xdata, ydata)
         logger.debug(
             f'k = {time:.3f} => kappa = {kappa:.3f}, mu0 = {mu0:.3f}, mu1 = {mu1:.3f}'
@@ -269,8 +288,8 @@ def main(args):
         dimU = 2 * I / (k2+1.e-9) / (dist(k2) + 1.e-9)
         P = k2 * dist.grad(k2) / (dist(k2) + 1.e-9)
         dimChi = 2 - dimU * (P+2)
-        kappas.append(kappa)
-        kappas_bar.append(kappa / dimChi / 2.0)
+        kappas.append(kappa * I**2 / k2**2 / dist(k2))
+        kappas_bar.append(kappa)
         mu0s.append(mu0)
         mu1s.append(mu1)
 
@@ -314,7 +333,7 @@ def main(args):
         fig, ax = plt.subplots(ncols=4, nrows=2, figsize=(32, 12))
         ax = ax.flatten()
 
-        ax[0].plot(k[25:], kappas_bar[25:], 'k-', label='simulated')
+        ax[0].plot(k, kappas_bar, 'k-', label='simulated')
         ax[0].invert_xaxis()
         ax[0].set_xlabel(
             r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
@@ -325,7 +344,7 @@ def main(args):
                                scilimits=(0, 0),
                                useMathText=True)
 
-        ax[1].plot(k[25:], kappas[25:], 'k-')
+        ax[1].plot(k, kappas, 'k-')
         ax[1].invert_xaxis()
         ax[1].set_xlabel(
             r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
@@ -335,7 +354,7 @@ def main(args):
                                style='sci',
                                scilimits=(0, 0),
                                useMathText=True)
-        ax[2].plot(k[25:], mu0s[25:], 'k-')
+        ax[2].plot(k, mu0s, 'k-')
         ax[2].invert_xaxis()
         ax[2].set_xlabel(
             r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
@@ -347,7 +366,7 @@ def main(args):
                                useMathText=True)
         # ax[2].set_yscale('symlog')
 
-        ax[3].plot(k[25:], mu1s[25:], 'k-')
+        ax[3].plot(k, mu1s, 'k-')
         ax[3].invert_xaxis()
         ax[3].set_xlabel(
             r'$\longmapsto~UV~\longrightarrow~k~\longrightarrow~IR~\longrightarrow$'
@@ -359,7 +378,7 @@ def main(args):
                                useMathText=True)
         # ax[3].set_yscale('symlog')
 
-        ax[4].plot(kappas[25:], mu0s[25:], 'k-')
+        ax[4].plot(kappas, mu0s, 'k-')
         ax[4].set_xlabel(r'$\kappa$')
         ax[4].set_ylabel(r'$\mu_0$')
         ax[4].ticklabel_format(axis='both',
@@ -369,7 +388,7 @@ def main(args):
         # ax[4].set_xscale('symlog')
         # ax[4].set_yscale('symlog')
 
-        ax[5].plot(kappas[25:], mu1s[25:], 'k-')
+        ax[5].plot(kappas, mu1s, 'k-')
         ax[5].set_xlabel(r'$\kappa$')
         ax[5].set_ylabel(r'$\mu_1$')
         ax[5].ticklabel_format(axis='both',
@@ -379,7 +398,7 @@ def main(args):
         # ax[5].set_xscale('symlog')
         # ax[5].set_yscale('symlog')
 
-        ax[6].plot(mu0s[25:], mu1s[25:], 'k-')
+        ax[6].plot(mu0s, mu1s, 'k-')
         ax[6].set_xlabel(r'$\mu_0$')
         ax[6].set_ylabel(r'$\mu_1$')
         ax[6].ticklabel_format(axis='both',
@@ -619,6 +638,9 @@ if __name__ == '__main__':
     parser.add_argument('--periodic',
                         action='store_true',
                         help='Periodic boundary conditions')
+    parser.add_argument('--ir-to-uv',
+                        action='store_true',
+                        help='Evolve from IR to UV')
     parser.add_argument('--nsteps', type=int, default=1000, help='Time steps')
     parser.add_argument(
         '--smooth',

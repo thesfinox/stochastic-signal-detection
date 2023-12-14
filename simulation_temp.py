@@ -19,6 +19,7 @@ from tabulate import tabulate
 from ssd import (SSD,
                  InterpolateDistribution,
                  MarchenkoPastur,
+                 SpecularReflection,
                  TranslatedInverseMarchenkoPastur)
 from ssd.utils.matrix import create_bulk, create_signal
 from ssd.utils.plots import (plot_inverse_mp_distribution,
@@ -147,6 +148,8 @@ def main(args):
                                      bins,
                                      output,
                                      prefix)
+    if not args.ir_to_uv:
+        dist = SpecularReflection(dist, shift=np.sqrt(mass_scale_top))
 
     # Define the grid
     grid = CartesianGrid(
@@ -159,7 +162,10 @@ def main(args):
     bc = 'periodic' if args.periodic else 'auto_periodic_neumann'
 
     # Initialize a storage
-    t_range = [np.sqrt(mass_scale_bottom), np.sqrt(mass_scale_top)]
+    if args.ir_to_uv:
+        t_range = [np.sqrt(mass_scale_bottom), np.sqrt(mass_scale_top)]
+    else:
+        t_range = [0.0, np.sqrt(mass_scale_top) - np.sqrt(mass_scale_bottom)]
     dt = (t_range[1] - t_range[0]) / args.nsteps
     dt_viz = dt * args.nsteps / 5
     storage = MemoryStorage()
@@ -184,9 +190,13 @@ def main(args):
             # Collect data
             x = field.grid.axes_coords[0]
             y_0 = field.data
+            if args.ir_to_uv:
+                k = time
+            else:
+                k = np.sqrt(mass_scale_top) - time
 
             # Plot the field
-            ax[n].plot(x, y_0, color=cmap(n), label=f'k = {time:.3f}')
+            ax[n].plot(x, y_0, color=cmap(n), label=f'k = {k:.3f}')
             ax[n].set_xlabel(r'$\overline{\chi}$')
             ax[n].set_ylabel(r'$\overline{\mathcal{U}}^{~\prime}$')
             ax[n].legend(loc='best')
@@ -198,24 +208,27 @@ def main(args):
         plt.close(fig)
 
     # Visualize the evolution of the field in a given position
-    t = []
+    k = []
     y_0 = []
     y_1 = []
     frac = []
     for time, field in storage.items():
 
         # Collect data
-        t.append(time)
+        if args.ir_to_uv:
+            k.append(time)
+        else:
+            k.append(np.sqrt(mass_scale_top) - time)
         y_0.append(field.data[0])
         y_1.append(field.data[-1])
         frac.append(1 - field.data[0] / field.data[-1])
         logger.debug(
-            f't = {time:.3f}, y0 = {field.data[0]:.3f}, y1 = {field.data[-1]:.3f}'
+            f'k = {k[-1]:.3f}, U\'[{args.xinf}] = {field.data[0]:.3f}, U\'[{args.xsup}] = {field.data[-1]:.3f}'
         )
 
     if args.debug:
         fig, ax = plt.subplots(ncols=2, figsize=(16, 6))
-        ax[0].plot(t, y_0, 'k-')
+        ax[0].plot(k, y_0, 'k-')
         ax[0].set_xlabel('k')
         ax[0].invert_xaxis()
         ax[0].set_ylabel(
@@ -224,7 +237,7 @@ def main(args):
                                style='sci',
                                scilimits=(0, 0),
                                useMathText=True)
-        ax[1].plot(t, y_1, 'k-')
+        ax[1].plot(k, y_1, 'k-')
         ax[1].set_xlabel('k')
         ax[1].invert_xaxis()
         ax[1].set_ylabel(
@@ -255,13 +268,13 @@ def main(args):
         'T': None if T is None else float(T),
         'nmax_chi_0': nmax_chi_0,
         'max_chi_0': float(y_0[nmax_chi_0]),
-        'argmax_chi_0': float(t[nmax_chi_0]),
+        'argmax_chi_0': float(k[nmax_chi_0]),
         'nmax_chi_1': nmax_chi_1,
         'max_chi_1': float(y_1[nmax_chi_1]),
-        'argmax_chi_1': float(t[nmax_chi_1]),
+        'argmax_chi_1': float(k[nmax_chi_1]),
         'min_frac': float(np.min(frac)),
         'nmin_frac': int(np.argmin(frac)),
-        'argmin_frac': float(t[np.argmin(frac)]),
+        'argmin_frac': float(k[np.argmin(frac)]),
     }
 
     # Store the data in a SQLite database
@@ -435,6 +448,9 @@ if __name__ == '__main__':
     parser.add_argument('--periodic',
                         action='store_true',
                         help='Periodic boundary conditions')
+    parser.add_argument('--ir-to-uv',
+                        action='store_true',
+                        help='Evolve from IR to UV')
     parser.add_argument('--nsteps', type=int, default=1000, help='Time steps')
     parser.add_argument(
         '--smooth',
