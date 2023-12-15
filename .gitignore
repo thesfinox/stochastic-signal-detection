@@ -10,6 +10,7 @@ pictures*
 result*
 sim_*
 visualization*
+*_signal
 
 # VSCode
 .vscode/

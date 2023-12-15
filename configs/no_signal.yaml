@@ -1,0 +1,51 @@
+OUTPUT:
+  OUTPUT_DIR: "no_signal"
+  DB:
+    OUTPUT_FILE: "simulation.sqlite"
+    TABLE: "simulation"
+INPUT:
+  MATRIX:
+    ROWS: 5000
+    COLUMNS: 4000
+    SEED: 42
+  SIGNAL:
+    RATIO: 0.05
+    BY_DET:
+      ENABLED: True
+      RANK: 2500
+    BY_IMG:
+      ENABLED: False
+      FILE: "cat.jpeg"
+  BINNING:
+    BINS: 100
+    SMOOTHING: 1.0
+  E_SCALE:
+    BY_VALUE:
+      ENABLED: True
+      MIN: 0.02
+      MAX: 0.2
+    BY_MASS_SCALE:
+      ENABLED: False
+      WIDTH: 0.25
+  INIT:
+    BY_TEMP:
+      ENABLED: False
+      T: 1.0
+      TC: 0.5
+    BY_PARAMS:
+      ENABLED: True
+      MU_0: -1.0
+      MU_1: 2.0
+      MU_2: 0.0
+    BY_INIT:
+      ENABLED: False
+      KAPPA_0: 0.0
+      MU_0: 1.0
+      MU_1: 1.0
+SIM:
+  INF: 0.0
+  SUP: 1.0
+  N_VALUES: 1000
+  N_STEPS: 1000
+  PERIODIC: False
+  IR_TO_UV: False
