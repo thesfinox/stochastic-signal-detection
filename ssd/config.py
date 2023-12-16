@@ -16,6 +16,7 @@ def get_cfg_defaults():
     _C.OUTPUT = CN()  # output parameters
 
     _C.OUTPUT.OUTPUT_DIR = 'simulation'
+    _C.OUTPUT.VIDEO_OUTPUT = False
 
     _C.OUTPUT.DB = CN()  # database parameters
 
@@ -62,11 +63,13 @@ def get_cfg_defaults():
     _C.INPUT.INIT.BY_PARAMS.MU_0 = 1.0
     _C.INPUT.INIT.BY_PARAMS.MU_1 = 1.0
     _C.INPUT.INIT.BY_PARAMS.MU_2 = 0.0
+    _C.INPUT.INIT.BY_PARAMS.MU_3 = 0.0
     _C.INPUT.INIT.BY_INIT = CN()  # choice by initial conditions
     _C.INPUT.INIT.BY_INIT.ENABLED = True
     _C.INPUT.INIT.BY_INIT.KAPPA_0 = 0.5
     _C.INPUT.INIT.BY_INIT.MU_0 = 1.0
     _C.INPUT.INIT.BY_INIT.MU_1 = 1.0
+    _C.INPUT.INIT.BY_INIT.MU_2 = 1.0
 
     # Simulation parameters
     _C.SIM = CN()  # simulation parameters

@@ -1,5 +1,6 @@
 OUTPUT:
   OUTPUT_DIR: "no_signal"
+  VIDEO_OUTPUT: True
   DB:
     OUTPUT_FILE: "simulation.sqlite"
     TABLE: "simulation"
@@ -11,18 +12,18 @@ INPUT:
   SIGNAL:
     RATIO: 0.05
     BY_DET:
-      ENABLED: True
+      ENABLED: False
       RANK: 2500
     BY_IMG:
-      ENABLED: False
-      FILE: "cat.jpeg"
+      ENABLED: True
+      FILE: "tigro.jpeg"
   BINNING:
     BINS: 100
     SMOOTHING: 1.0
   E_SCALE:
     BY_VALUE:
       ENABLED: True
-      MIN: 0.02
+      MIN: 0.0
       MAX: 0.2
     BY_MASS_SCALE:
       ENABLED: False
@@ -33,15 +34,17 @@ INPUT:
       T: 1.0
       TC: 0.5
     BY_PARAMS:
-      ENABLED: True
+      ENABLED: False
       MU_0: -1.0
       MU_1: 2.0
       MU_2: 0.0
+      MU_3: 0.0
     BY_INIT:
-      ENABLED: False
+      ENABLED: True
       KAPPA_0: 0.0
       MU_0: 1.0
       MU_1: 1.0
+      MU_2: 0.0
 SIM:
   INF: 0.0
   SUP: 1.0

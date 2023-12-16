@@ -5,19 +5,15 @@ SSD - Stochastic Signal Detection
 Simulation of the stochastic signal detection mechanism.
 """
 import argparse
-import io
 import json
 import sqlite3
 import sys
 from datetime import datetime
-from glob import glob
 from pathlib import Path
 
-import cv2
 import ffmpeg
 import matplotlib as mpl
 import numpy as np
-import yaml
 from matplotlib import pyplot as plt
 from pde import CartesianGrid, MemoryStorage, ScalarField
 from PIL import Image
@@ -42,7 +38,8 @@ __description__ = 'Simulation of the stochastic signal detection mechanism.'
 __epilog__ = 'For bug reports and info: ' + __author__ + ' <' + __email__ + '>'
 
 
-def potential_fit(x: float, kappa: float, mu0: float, mu1: float) -> float:
+def U_fit_function(x: float, kappa: float, mu0: float, mu1: float,
+                   mu2: float) -> float:
     """
     The fit of the potential function.
 
@@ -56,13 +53,41 @@ def potential_fit(x: float, kappa: float, mu0: float, mu1: float) -> float:
         The value of the first derivative of the potential at the minimum
     mu1 : float
         The value of the second derivative of the potential at the minimum
+    mu2 : float
+        The value of the third derivative of the potential at the minimum
 
     Returns
     -------
     float
         The value of the function at x
     """
-    return mu0 * (x-kappa) + mu1 * (x - kappa)**2
+    return mu0 * (x - kappa)**2 + mu1 * (x - kappa)**3 + mu2 * (x - kappa)**4
+
+
+def Up_fit_function(x: float, kappa: float, mu0: float, mu1: float,
+                    mu2: float) -> float:
+    """
+    The fit of the first derivative of the potential function.
+
+    Parameters
+    ----------
+    x : float
+        The point at which to evaluate the function
+    kappa : float
+        The location of the first minimum of the potential
+    mu0 : float
+        The value of the first derivative of the potential at the minimum
+    mu1 : float
+        The value of the second derivative of the potential at the minimum
+    mu2 : float
+        The value of the third derivative of the potential at the minimum
+
+    Returns
+    -------
+    float
+        The value of the function at x
+    """
+    return mu0 * (x-kappa) + mu1 * (x - kappa)**2 + mu2 * (x - kappa)**3
 
 
 def main(args):
@@ -88,13 +113,15 @@ def main(args):
         kappa_bar_0 = init.BY_INIT.KAPPA_0
         mu_bar_0_0 = init.BY_INIT.MU_0
         mu_bar_1_0 = init.BY_INIT.MU_1
-        expr = f'{mu_bar_0_0} * (x - {kappa_bar_0}) + {mu_bar_1_0} * (x - {kappa_bar_0})**2'
+        mu_bar_2_0 = init.BY_INIT.MU_2
+        expr = f'{mu_bar_0_0} * (x - {kappa_bar_0}) + {mu_bar_1_0} * (x - {kappa_bar_0})**2 + {mu_bar_2_0} * (x - {kappa_bar_0})**3'
     elif init.BY_PARAMS.ENABLED:
         log.debug("Init by parameters...")
         mu_bar_0_0 = init.BY_PARAMS.MU_0
         mu_bar_1_0 = init.BY_PARAMS.MU_1
         mu_bar_2_0 = init.BY_PARAMS.MU_2
-        expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2'
+        mu_bar_3_0 = init.BY_PARAMS.MU_3
+        expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2 + {mu_bar_3_0} * x**3'
     elif init.BY_TEMP.ENABLED:
         log.debug("Init by temperature...")
         T = init.BY_TEMP.T
@@ -102,7 +129,8 @@ def main(args):
         mu_bar_0_0 = T - TC
         mu_bar_1_0 = T
         mu_bar_2_0 = T**2
-        expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2'
+        mu_bar_3_0 = T**3
+        expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2 + {mu_bar_3_0} * x**3'
     else:
         raise ValueError('No valid initial conditions defined!')
     log.debug(f"Initial conditions: {expr}")
@@ -334,9 +362,11 @@ def main(args):
     kappa_bar_list = []
     mu_bar_0_list = []
     mu_bar_1_list = []
+    mu_bar_2_list = []
     kappa_list = []
     mu_0_list = []
     mu_1_list = []
+    mu_2_list = []
     Up_list = []
     U_list = []
     for n, (k, Up_data) in enumerate(storage.items()):
@@ -361,6 +391,8 @@ def main(args):
         #    \overline{\mu_0} (\overline{\chi} - \overline{\kappa})
         #    +
         #    \overline{\mu_1} (\overline{\chi} - \overline{\kappa})^2,
+        #    +
+        #    \overline{\mu_2} (\overline{\chi} - \overline{\kappa})^3,
         #  $$
         #  where $\overline{\kappa}$ is the location of the minimum of the potential
         #  $\overline{\mathcal{U}}$.
@@ -379,44 +411,67 @@ def main(args):
         mu_bar_1 = d2Up[np.argmin(U)] / 2
         mu_bar_1_list.append(mu_bar_1)
 
-        # Save the potential curve and its fit in an image object
-        Up_fit = np.array([
-            potential_fit(x_, kappa_bar, mu_bar_0, mu_bar_1)
-            for x_ in grid.axes_coords[0]
-        ])
-        fig, ax = plt.subplots()
-        ax.plot(grid.axes_coords[0], Up, 'k-', label='data')
-        ax.plot(grid.axes_coords[0], Up_fit, 'r--', label='fit')
-        ax.set_xlabel(r'$\overline{\chi}$')
-        ax.set_ylabel(r'$\overline{\mathcal{U}}^{\prime}$')
-        ax.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
-        ax.set_xlim(cfg.SIM.INF, cfg.SIM.SUP)
-        ax.ticklabel_format(axis='both',
-                            style='sci',
-                            scilimits=(0, 0),
-                            useMathText=True)
-        ax.set_title(rf'$k = {time:.5f}$')
-        ax.set_xscale('symlog')
-        ax.set_yscale('symlog')
-        plt.tight_layout()
-        plt.savefig(output_dir / f'up_{n:04d}.png')
-        plt.close(fig)
+        d3Up = np.gradient(d2Up, grid.axes_coords[0], edge_order=2)
+        mu_bar_2 = d3Up[np.argmin(U)] / 6
+        mu_bar_2_list.append(mu_bar_2)
 
-        fig, ax = plt.subplots()
-        ax.plot(grid.axes_coords[0][:-1], U, 'k-')
-        ax.set_xlabel(r'$\overline{\chi}$')
-        ax.set_ylabel(r'$\overline{\mathcal{U}}$')
-        ax.set_xlim(cfg.SIM.INF, cfg.SIM.SUP)
-        ax.ticklabel_format(axis='both',
-                            style='sci',
-                            scilimits=(0, 0),
-                            useMathText=True)
-        ax.set_title(rf'$k = {time:.5f}$')
-        ax.set_xscale('symlog')
-        ax.set_yscale('symlog')
-        plt.tight_layout()
-        plt.savefig(output_dir / f'u_{n:04d}.png')
-        plt.close(fig)
+        # Save the potential curve and its fit in an image object
+        if cfg.OUTPUT.VIDEO_OUTPUT:
+            U_fit = np.array([
+                U_fit_function(x_, kappa_bar, mu_bar_0, mu_bar_1, mu_bar_2)
+                for x_ in grid.axes_coords[0]
+            ])
+            fig, ax = plt.subplots()
+            ax.plot(grid.axes_coords[0], U_fit, 'k-')
+            ax.set_xlabel(r'$\overline{\chi}$')
+            ax.set_ylabel(r'$\overline{\mathcal{U}}$')
+            ax.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
+            ax.set_xlim(cfg.SIM.INF, cfg.SIM.SUP)
+            ax.ticklabel_format(axis='y',
+                                style='sci',
+                                scilimits=(0, 0),
+                                useMathText=True)
+            ax.set_title(rf'$k = {time:.5f}$')
+            ax.set_yscale('symlog')
+            plt.tight_layout()
+            plt.savefig(output_dir / f'u_proj_{n:04d}.png')
+            plt.close(fig)
+
+            Up_fit = np.array([
+                Up_fit_function(x_, kappa_bar, mu_bar_0, mu_bar_1, mu_bar_2)
+                for x_ in grid.axes_coords[0]
+            ])
+            fig, ax = plt.subplots()
+            ax.plot(grid.axes_coords[0], Up, 'k-', label='data')
+            ax.plot(grid.axes_coords[0], Up_fit, 'r--', label='fit')
+            ax.set_xlabel(r'$\overline{\chi}$')
+            ax.set_ylabel(r'$\overline{\mathcal{U}}^{\prime}$')
+            ax.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
+            ax.set_xlim(cfg.SIM.INF, cfg.SIM.SUP)
+            ax.ticklabel_format(axis='y',
+                                style='sci',
+                                scilimits=(0, 0),
+                                useMathText=True)
+            ax.set_title(rf'$k = {time:.5f}$')
+            ax.set_yscale('symlog')
+            plt.tight_layout()
+            plt.savefig(output_dir / f'up_{n:04d}.png')
+            plt.close(fig)
+
+            fig, ax = plt.subplots()
+            ax.plot(grid.axes_coords[0][:-1], U, 'k-')
+            ax.set_xlabel(r'$\overline{\chi}$')
+            ax.set_ylabel(r'$\overline{\mathcal{U}}$')
+            ax.set_xlim(cfg.SIM.INF, cfg.SIM.SUP)
+            ax.ticklabel_format(axis='y',
+                                style='sci',
+                                scilimits=(0, 0),
+                                useMathText=True)
+            ax.set_title(rf'$k = {time:.5f}$')
+            ax.set_yscale('symlog')
+            plt.tight_layout()
+            plt.savefig(output_dir / f'u_{n:04d}.png')
+            plt.close(fig)
 
         # Now convert to dimensional quantities
         # $$
@@ -431,35 +486,45 @@ def main(args):
         kappa = kappa_bar * I**2 / k**4 / dist(k**2)
         mu_0 = mu_bar_0 * k**6 * dist(k**2) / I**2
         mu_1 = mu_bar_1 * k**10 * dist(k**2)**2 / I**4
+        mu_2 = mu_bar_2 * k**14 * dist(k**2)**3 / I**6
 
         if not np.isnan([kappa, mu_0, mu_1]).any():
             kappa_list.append(kappa)
             mu_0_list.append(mu_0)
             mu_1_list.append(mu_1)
+            mu_2_list.append(mu_2)
             k_list.append(time)
         else:
             log.warning(
                 "Found NaN values in the dimensional parameters! Skipping...")
 
     # Convert images to videos
-    log.info("Converting images to videos...")
-    up_video = ffmpeg.input(str(output_dir / 'up_*.png'),
-                            pattern_type='glob',
-                            framerate=60)
-    up_video = up_video.output(str(output_dir / 'up.mp4'))
-    up_video.run(quiet=True, overwrite_output=True)
-    u_video = ffmpeg.input(str(output_dir / 'u_*.png'),
-                           pattern_type='glob',
-                           framerate=60)
-    u_video = u_video.output(str(output_dir / 'u.mp4'))
-    u_video.run(quiet=True, overwrite_output=True)
+    if cfg.OUTPUT.VIDEO_OUTPUT:
+        log.info("Converting images to videos...")
+        u_proj_video = ffmpeg.input(str(output_dir / 'u_proj_*.png'),
+                                    pattern_type='glob',
+                                    framerate=60)
+        u_proj_video = u_proj_video.output(str(output_dir / 'u_proj.mp4'))
+        u_proj_video.run(quiet=True, overwrite_output=True)
+        up_video = ffmpeg.input(str(output_dir / 'up_*.png'),
+                                pattern_type='glob',
+                                framerate=60)
+        up_video = up_video.output(str(output_dir / 'up.mp4'))
+        up_video.run(quiet=True, overwrite_output=True)
+        u_video = ffmpeg.input(str(output_dir / 'u_*.png'),
+                               pattern_type='glob',
+                               framerate=60)
+        u_video = u_video.output(str(output_dir / 'u.mp4'))
+        u_video.run(quiet=True, overwrite_output=True)
 
-    # Remove temporary files
-    log.info("Removing temporary files...")
-    for f in output_dir.glob('up_*.png'):
-        f.unlink()
-    for f in output_dir.glob('u_*.png'):
-        f.unlink()
+        # Remove temporary files
+        log.info("Removing temporary files...")
+        for f in output_dir.glob('u_proj_*.png'):
+            f.unlink()
+        for f in output_dir.glob('up_*.png'):
+            f.unlink()
+        for f in output_dir.glob('u_*.png'):
+            f.unlink()
 
     # Add information to the sqlite database
     log.info("Filling database...")
@@ -487,9 +552,11 @@ def main(args):
             kappa_bar TEXT,
             mu_bar_0 TEXT,
             mu_bar_1 TEXT,
+            mu_bar_2 TEXT,
             kappa TEXT,
             mu_0 TEXT,
             mu_1 TEXT,
+            mu_2 TEXT,
             Up TEXT,
             U TEXT
             )"""
@@ -510,9 +577,11 @@ def main(args):
             kappa_bar,
             mu_bar_0,
             mu_bar_1,
+            mu_bar_2,
             kappa,
             mu_0,
             mu_1,
+            mu_2,
             Up,
             U
             ) VALUES (
@@ -528,9 +597,11 @@ def main(args):
             '{json.dumps(list(kappa_bar_list))}',
             '{json.dumps(list(mu_bar_0_list))}',
             '{json.dumps(list(mu_bar_1_list))}',
+            '{json.dumps(list(mu_bar_2_list))}',
             '{json.dumps(list(kappa_list))}',
             '{json.dumps(list(mu_0_list))}',
             '{json.dumps(list(mu_1_list))}',
+            '{json.dumps(list(mu_2_list))}',
             '{json.dumps(list(Up_list))}',
             '{json.dumps(list(U_list))}'
             )"""
@@ -544,28 +615,28 @@ def main(args):
 
     # Visualize the results
     log.info("Visualizing the results...")
-    fig, ax = plt.subplots(ncols=3, nrows=5, figsize=(40, 18))
+    fig, ax = plt.subplots(ncols=4, nrows=5, figsize=(40, 24))
 
     log.debug("Plotting the potential at starting point...")
     ax[0, 0].plot(k_bar_list, Up_start_list, 'k-')
-    ax[0, 0].plot([k_bar_list[0]], [Up_start_list[0]], 'ro')
-    ax[0, 0].plot([k_bar_list[-1]], [Up_start_list[-1]], 'bo')
+    ax[0, 0].plot([k_bar_list[0]], [Up_start_list[0]], 'bo')
+    ax[0, 0].plot([k_bar_list[-1]], [Up_start_list[-1]], 'ro')
     ax[0, 0].set_xlabel('k')
     ax[0, 0].set_ylabel(
         rf'$\overline{{\mathcal{{U}}}}^{{\prime}}[\overline{{{cfg.SIM.INF}}}]$')
 
     log.debug("Plotting the potential at ending point...")
     ax[0, 1].plot(k_bar_list, Up_end_list, 'k-')
-    ax[0, 1].plot([k_bar_list[0]], [Up_end_list[0]], 'ro')
-    ax[0, 1].plot([k_bar_list[-1]], [Up_end_list[-1]], 'bo')
+    ax[0, 1].plot([k_bar_list[0]], [Up_end_list[0]], 'bo')
+    ax[0, 1].plot([k_bar_list[-1]], [Up_end_list[-1]], 'ro')
     ax[0, 1].set_xlabel('k')
     ax[0, 1].set_ylabel(
         rf'$\overline{{\mathcal{{U}}}}^{{\prime}}[\overline{{{cfg.SIM.SUP}}}]$')
 
     log.debug("Plotting potential curve at starting and ending points...")
     ax[0, 2].plot(Up_start_list, Up_end_list, 'k-')
-    ax[0, 2].plot([Up_start_list[0]], [Up_end_list[0]], 'ro')
-    ax[0, 2].plot([Up_start_list[-1]], [Up_end_list[-1]], 'bo')
+    ax[0, 2].plot([Up_start_list[0]], [Up_end_list[0]], 'bo')
+    ax[0, 2].plot([Up_start_list[-1]], [Up_end_list[-1]], 'ro')
     ax[0, 2].set_xlabel(
         rf'$\overline{{\mathcal{{U}}}}^{{\prime}}[\overline{{{cfg.SIM.INF}}}]$')
     ax[0, 2].set_ylabel(
@@ -573,52 +644,66 @@ def main(args):
 
     log.debug("Plotting \\overline{\\kappa}...")
     ax[1, 0].plot(k_bar_list, kappa_bar_list, 'k-')
-    ax[1, 0].plot([k_bar_list[0]], [kappa_bar_list[0]], 'ro')
-    ax[1, 0].plot([k_bar_list[-1]], [kappa_bar_list[-1]], 'bo')
+    ax[1, 0].plot([k_bar_list[0]], [kappa_bar_list[0]], 'bo')
+    ax[1, 0].plot([k_bar_list[-1]], [kappa_bar_list[-1]], 'ro')
     ax[1, 0].set_xlabel('k')
     ax[1, 0].set_ylabel(r'$\overline{\kappa}$')
 
     log.debug("Plotting \\overline{\\mu}_0...")
     ax[1, 1].plot(k_bar_list, mu_bar_0_list, 'k-')
-    ax[1, 1].plot([k_bar_list[0]], [mu_bar_0_list[0]], 'ro')
-    ax[1, 1].plot([k_bar_list[-1]], [mu_bar_0_list[-1]], 'bo')
+    ax[1, 1].plot([k_bar_list[0]], [mu_bar_0_list[0]], 'bo')
+    ax[1, 1].plot([k_bar_list[-1]], [mu_bar_0_list[-1]], 'ro')
     ax[1, 1].set_xlabel('k')
     ax[1, 1].set_ylabel(r'$\overline{\mu}_0$')
 
     log.debug("Plotting \\overline{\\mu}_1...")
     ax[1, 2].plot(k_bar_list, mu_bar_1_list, 'k-')
-    ax[1, 2].plot([k_bar_list[0]], [mu_bar_1_list[0]], 'ro')
-    ax[1, 2].plot([k_bar_list[-1]], [mu_bar_1_list[-1]], 'bo')
+    ax[1, 2].plot([k_bar_list[0]], [mu_bar_1_list[0]], 'bo')
+    ax[1, 2].plot([k_bar_list[-1]], [mu_bar_1_list[-1]], 'ro')
     ax[1, 2].set_xlabel('k')
     ax[1, 2].set_ylabel(r'$\overline{\mu}_1$')
 
+    log.debug("Plotting \\overline{\\mu}_2...")
+    ax[1, 3].plot(k_bar_list, mu_bar_2_list, 'k-')
+    ax[1, 3].plot([k_bar_list[0]], [mu_bar_2_list[0]], 'bo')
+    ax[1, 3].plot([k_bar_list[-1]], [mu_bar_2_list[-1]], 'ro')
+    ax[1, 3].set_xlabel('k')
+    ax[1, 3].set_ylabel(r'$\overline{\mu}_2$')
+
     log.debug("Plotting \\kappa...")
     ax[2, 0].plot(k_list, kappa_list, 'k-')
-    ax[2, 0].plot([k_list[0]], [kappa_list[0]], 'ro')
-    ax[2, 0].plot([k_list[-1]], [kappa_list[-1]], 'bo')
+    ax[2, 0].plot([k_list[0]], [kappa_list[0]], 'bo')
+    ax[2, 0].plot([k_list[-1]], [kappa_list[-1]], 'ro')
     ax[2, 0].set_xlabel('k')
     ax[2, 0].set_ylabel(r'$\kappa$')
 
     log.debug("Plotting \\mu_0...")
     ax[2, 1].plot(k_list, mu_0_list, 'k-')
-    ax[2, 1].plot([k_list[0]], [mu_0_list[0]], 'ro')
-    ax[2, 1].plot([k_list[-1]], [mu_0_list[-1]], 'bo')
+    ax[2, 1].plot([k_list[0]], [mu_0_list[0]], 'bo')
+    ax[2, 1].plot([k_list[-1]], [mu_0_list[-1]], 'ro')
     ax[2, 1].set_xlabel('k')
     ax[2, 1].set_ylabel(r'$\mu_0$')
 
     log.debug("Plotting \\mu_1...")
     ax[2, 2].plot(k_list, mu_1_list, 'k-')
-    ax[2, 2].plot([k_list[0]], [mu_1_list[0]], 'ro')
-    ax[2, 2].plot([k_list[-1]], [mu_1_list[-1]], 'bo')
+    ax[2, 2].plot([k_list[0]], [mu_1_list[0]], 'bo')
+    ax[2, 2].plot([k_list[-1]], [mu_1_list[-1]], 'ro')
     ax[2, 2].set_xlabel('k')
     ax[2, 2].set_ylabel(r'$\mu_1$')
+
+    log.debug("Plotting \\mu_2...")
+    ax[2, 3].plot(k_list, mu_2_list, 'k-')
+    ax[2, 3].plot([k_list[0]], [mu_2_list[0]], 'bo')
+    ax[2, 3].plot([k_list[-1]], [mu_2_list[-1]], 'ro')
+    ax[2, 3].set_xlabel('k')
+    ax[2, 3].set_ylabel(r'$\mu_2$')
 
     log.debug(
         "Plotting phase space curve \\overline{\\kappa} vs \\overline{{\\mu}}_0..."
     )
     ax[3, 0].plot(kappa_bar_list, mu_bar_0_list, 'k-')
-    ax[3, 0].plot([kappa_bar_list[0]], [mu_bar_0_list[0]], 'ro')
-    ax[3, 0].plot([kappa_bar_list[-1]], [mu_bar_0_list[-1]], 'bo')
+    ax[3, 0].plot([kappa_bar_list[0]], [mu_bar_0_list[0]], 'bo')
+    ax[3, 0].plot([kappa_bar_list[-1]], [mu_bar_0_list[-1]], 'ro')
     ax[3, 0].set_xlabel(r'$\overline{\kappa}$')
     ax[3, 0].set_ylabel(r'$\overline{\mu}_0$')
 
@@ -626,8 +711,8 @@ def main(args):
         "Plotting phase space curve \\overline{\\kappa} vs \\overline{{\\mu}}_1..."
     )
     ax[3, 1].plot(kappa_bar_list, mu_bar_1_list, 'k-')
-    ax[3, 1].plot([kappa_bar_list[0]], [mu_bar_1_list[0]], 'ro')
-    ax[3, 1].plot([kappa_bar_list[-1]], [mu_bar_1_list[-1]], 'bo')
+    ax[3, 1].plot([kappa_bar_list[0]], [mu_bar_1_list[0]], 'bo')
+    ax[3, 1].plot([kappa_bar_list[-1]], [mu_bar_1_list[-1]], 'ro')
     ax[3, 1].set_xlabel(r'$\overline{\kappa}$')
     ax[3, 1].set_ylabel(r'$\overline{\mu}_1$')
 
@@ -635,39 +720,38 @@ def main(args):
         "Plotting phase space curve \\overline{{\\mu}}_0 vs \\overline{{\\mu}}_1..."
     )
     ax[3, 2].plot(mu_bar_0_list, mu_bar_1_list, 'k-')
-    ax[3, 2].plot([mu_bar_0_list[0]], [mu_bar_1_list[0]], 'ro')
-    ax[3, 2].plot([mu_bar_0_list[-1]], [mu_bar_1_list[-1]], 'bo')
+    ax[3, 2].plot([mu_bar_0_list[0]], [mu_bar_1_list[0]], 'bo')
+    ax[3, 2].plot([mu_bar_0_list[-1]], [mu_bar_1_list[-1]], 'ro')
     ax[3, 2].set_xlabel(r'$\overline{\mu}_0$')
     ax[3, 2].set_ylabel(r'$\overline{\mu}_1$')
 
     log.debug("Plotting phase space curve \\kappa vs \\mu_0...")
     ax[4, 0].plot(kappa_list, mu_0_list, 'k-')
-    ax[4, 0].plot([kappa_list[0]], [mu_0_list[0]], 'ro')
-    ax[4, 0].plot([kappa_list[-1]], [mu_0_list[-1]], 'bo')
+    ax[4, 0].plot([kappa_list[0]], [mu_0_list[0]], 'bo')
+    ax[4, 0].plot([kappa_list[-1]], [mu_0_list[-1]], 'ro')
     ax[4, 0].set_xlabel(r'$\kappa$')
     ax[4, 0].set_ylabel(r'$\mu_0$')
 
     log.debug("Plotting phase space curve \\kappa vs \\mu_1...")
     ax[4, 1].plot(kappa_list, mu_1_list, 'k-')
-    ax[4, 1].plot([kappa_list[0]], [mu_1_list[0]], 'ro')
-    ax[4, 1].plot([kappa_list[-1]], [mu_1_list[-1]], 'bo')
+    ax[4, 1].plot([kappa_list[0]], [mu_1_list[0]], 'bo')
+    ax[4, 1].plot([kappa_list[-1]], [mu_1_list[-1]], 'ro')
     ax[4, 1].set_xlabel(r'$\kappa$')
     ax[4, 1].set_ylabel(r'$\mu_1$')
 
     log.debug("Plotting phase space curve \\mu_0 vs \\mu_1...")
     ax[4, 2].plot(mu_0_list, mu_1_list, 'k-')
-    ax[4, 2].plot([mu_0_list[0]], [mu_1_list[0]], 'ro')
-    ax[4, 2].plot([mu_0_list[-1]], [mu_1_list[-1]], 'bo')
+    ax[4, 2].plot([mu_0_list[0]], [mu_1_list[0]], 'bo')
+    ax[4, 2].plot([mu_0_list[-1]], [mu_1_list[-1]], 'ro')
     ax[4, 2].set_xlabel(r'$\mu_0$')
     ax[4, 2].set_ylabel(r'$\mu_1$')
 
     ax = ax.flatten()
     for i in range(len(ax)):
-        ax[i].ticklabel_format(axis='both',
+        ax[i].ticklabel_format(axis='y',
                                style='sci',
                                scilimits=(0, 0),
                                useMathText=True)
-        ax[i].set_xscale('symlog')
         ax[i].set_yscale('symlog')
 
     plt.tight_layout()
