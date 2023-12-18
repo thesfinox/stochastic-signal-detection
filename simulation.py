@@ -8,6 +8,7 @@ import argparse
 import json
 import sqlite3
 import sys
+from cProfile import label
 from datetime import datetime
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from matplotlib import pyplot as plt
 from pde import CartesianGrid, MemoryStorage, ScalarField
 from PIL import Image
 from scipy.integrate import simpson
+from tqdm import tqdm
 
 from ssd import __version__
 from ssd.distributions import (InterpolateDistribution,
@@ -129,7 +131,7 @@ def main(args):
         mu_bar_0_0 = T - TC
         mu_bar_1_0 = T
         mu_bar_2_0 = T**2
-        mu_bar_3_0 = T**3
+        mu_bar_3_0 = T**4
         expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2 + {mu_bar_3_0} * x**3'
     else:
         raise ValueError('No valid initial conditions defined!')
@@ -168,15 +170,11 @@ def main(args):
 
     # Plot the signal matrix
     log.info("Plotting the signal matrix...")
-    fig, ax = plt.subplots(ncols=2, figsize=(16, 6))
-    ax[0].imshow(X, cmap='gray')
-    ax[0].grid(False)
-    ax[0].set_xticks([])
-    ax[0].set_yticks([])
-    ax[1].imshow(C, cmap='viridis')
-    ax[1].grid(False)
-    ax[1].set_xticks([])
-    ax[1].set_yticks([])
+    fig, ax = plt.subplots()
+    ax.imshow(X, cmap='gray')
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
     plt.tight_layout()
     plt.savefig(output_dir / 'signal_matrix.png')
     plt.close(fig)
@@ -186,10 +184,6 @@ def main(args):
     E = np.linalg.eigvalsh(C)
     log.debug(f"Eigenvalues:\nlambda_max = {E.max()}\nlambda_min = {E.min()}")
 
-    E_inv = np.flip(1 / E)
-    log.debug(f"Momenta:\nk2_max = {E_inv.max()}\nk2_min = {E_inv.min()}")
-    E_inv -= E_inv.min()
-
     # Define the MP distribution associated to the background
     log.info("Defining the MP distribution associated to the background...")
     ratio = matrix.COLUMNS / matrix.ROWS
@@ -197,7 +191,7 @@ def main(args):
 
     # Plot the distribution of the eigenvalues
     log.info("Plotting the distribution of the eigenvalues...")
-    x = np.linspace(0.0, 1.15 * E.max(), 2500)
+    x = np.linspace(0.0, 1.05 * E.max(), 2500)
     y = np.array([mp(x_) for x_ in x])
     fig, ax = plt.subplots()
     ax.hist(E,
@@ -214,6 +208,36 @@ def main(args):
     plt.savefig(output_dir / 'mp_eigenvalues.png')
     plt.close(fig)
 
+    # # Compute the distance between consecutive eigenvalues, and if it is too
+    # # large (given by a user defined threshold), then remove the corresponding
+    # # eigenvalues.
+    # log.info("Removing spikes (PCA)...")
+    # E_spikes = np.where(np.diff(E) > cfg.SIM.EIGEN_THRESH)[0] + 1
+    # if len(E_spikes) > 0:
+    #     log.debug(f"Found {len(E_spikes)} spikes!")
+    #     E = np.delete(E, E_spikes)
+    #     log.debug(
+    #         f"New eigenvalues:\nlambda_max = {E.max()}\nlambda_min = {E.min()}")
+
+    #     # Plot the distribution of the eigenvalues
+    #     log.info("Plotting the distribution of the eigenvalues...")
+    #     x = np.linspace(0.0, 1.05 * E.max(), 2500)
+    #     y = np.array([mp(x_) for x_ in x])
+    #     fig, ax = plt.subplots()
+    #     ax.hist(E,
+    #             bins=cfg.INPUT.BINNING.BINS,
+    #             density=True,
+    #             color='b',
+    #             alpha=0.5,
+    #             label='eigenvalues')
+    #     ax.plot(x, y, 'r-', label='MP')
+    #     ax.set_xlabel(r'$\lambda$')
+    #     ax.set_ylabel(r'$\mu(\lambda)$')
+    #     ax.legend()
+    #     plt.tight_layout()
+    #     plt.savefig(output_dir / 'mp_eigenvalues_no_spikes.png')
+    #     plt.close(fig)
+
     # Define the energy scale
     log.info("Defining the energy scale...")
     e_scale = cfg.INPUT.E_SCALE
@@ -229,6 +253,12 @@ def main(args):
     log.debug(
         f"Energy scale of the integration:\nk2_max = {m2_top}\nk2_min = {m2_bot}"
     )
+
+    # Compute the inverse of the eigenvalues
+    log.info("Computing the inverse of the eigenvalues...")
+    E_inv = np.flip(1 / E)
+    log.debug(f"Momenta:\nk2_max = {E_inv.max()}\nk2_min = {E_inv.min()}")
+    E_inv -= E_inv.min()
 
     # Define the distribution of the simulation
     log.info("Defining the distribution of the simulation...")
@@ -321,11 +351,16 @@ def main(args):
         y = np.array([dist(x_) for x_ in x])
 
         fig, ax = plt.subplots()
-        ax.plot(x, y, 'k-')
+        ax.plot(x, y, 'k-', label='distribution')
         ax.set_xlim(-m2_top, m2_top)
         ax.set_xlabel(r'$k^2$')
         ax.set_ylabel(r'$\rho$')
-        ax.vlines(0.0, 0.0, y.max(), color='k', linestyle='--')
+        ax.axvspan(0.0,
+                   m2_top - m2_bot,
+                   color='g',
+                   alpha=0.25,
+                   label='integration region')
+        ax.legend()
         plt.tight_layout()
         plt.savefig(output_dir / 'mp_eigenvalues_reflected.png')
         plt.close(fig)
@@ -369,7 +404,11 @@ def main(args):
     mu_2_list = []
     Up_list = []
     U_list = []
-    for n, (k, Up_data) in enumerate(storage.items()):
+    items = tqdm(storage.items(),
+                 unit='step(s)',
+                 leave=False,
+                 total=cfg.SIM.N_STEPS)
+    for n, (k, Up_data) in enumerate(items):
 
         # "Time" of the simulation
         if cfg.SIM.IR_TO_UV:
@@ -425,7 +464,6 @@ def main(args):
             ax.plot(grid.axes_coords[0], U_fit, 'k-')
             ax.set_xlabel(r'$\overline{\chi}$')
             ax.set_ylabel(r'$\overline{\mathcal{U}}$')
-            ax.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
             ax.set_xlim(cfg.SIM.INF, cfg.SIM.SUP)
             ax.ticklabel_format(axis='y',
                                 style='sci',
@@ -642,6 +680,17 @@ def main(args):
     ax[0, 2].set_ylabel(
         rf'$\overline{{\mathcal{{U}}}}^{{\prime}}[\overline{{{cfg.SIM.SUP}}}]$')
 
+    log.debug("Plotting ratio of starting and ending points...")
+    ax[0, 3].plot(k_bar_list,
+                  np.array(Up_end_list) / np.array(Up_start_list),
+                  'k-')
+    ax[0, 3].plot([k_bar_list[0]], [Up_end_list[0] / Up_start_list[0]], 'bo')
+    ax[0, 3].plot([k_bar_list[-1]], [Up_end_list[-1] / Up_start_list[-1]], 'ro')
+    ax[0, 3].set_xlabel('k')
+    ax[0, 3].set_ylabel(
+        rf'$\overline{{\mathcal{{U}}}}^{{\prime}}[\overline{{{cfg.SIM.SUP}}}] / \overline{{\mathcal{{U}}}}^{{\prime}}[\overline{{{cfg.SIM.INF}}}]$'
+    )
+
     log.debug("Plotting \\overline{\\kappa}...")
     ax[1, 0].plot(k_bar_list, kappa_bar_list, 'k-')
     ax[1, 0].plot([k_bar_list[0]], [kappa_bar_list[0]], 'bo')
@@ -725,6 +774,15 @@ def main(args):
     ax[3, 2].set_xlabel(r'$\overline{\mu}_0$')
     ax[3, 2].set_ylabel(r'$\overline{\mu}_1$')
 
+    log.debug(
+        "Plotting phase space curve \\overline{{\\mu}}_0 vs \\overline{{\\mu}}_2..."
+    )
+    ax[3, 3].plot(mu_bar_0_list, mu_bar_2_list, 'k-')
+    ax[3, 3].plot([mu_bar_0_list[0]], [mu_bar_2_list[0]], 'bo')
+    ax[3, 3].plot([mu_bar_0_list[-1]], [mu_bar_2_list[-1]], 'ro')
+    ax[3, 3].set_xlabel(r'$\overline{\mu}_0$')
+    ax[3, 3].set_ylabel(r'$\overline{\mu}_2$')
+
     log.debug("Plotting phase space curve \\kappa vs \\mu_0...")
     ax[4, 0].plot(kappa_list, mu_0_list, 'k-')
     ax[4, 0].plot([kappa_list[0]], [mu_0_list[0]], 'bo')
@@ -745,6 +803,13 @@ def main(args):
     ax[4, 2].plot([mu_0_list[-1]], [mu_1_list[-1]], 'ro')
     ax[4, 2].set_xlabel(r'$\mu_0$')
     ax[4, 2].set_ylabel(r'$\mu_1$')
+
+    log.debug("Plotting phase space curve \\mu_0 vs \\mu_2...")
+    ax[4, 3].plot(mu_0_list, mu_2_list, 'k-')
+    ax[4, 3].plot([mu_0_list[0]], [mu_2_list[0]], 'bo')
+    ax[4, 3].plot([mu_0_list[-1]], [mu_2_list[-1]], 'ro')
+    ax[4, 3].set_xlabel(r'$\mu_0$')
+    ax[4, 3].set_ylabel(r'$\mu_2$')
 
     ax = ax.flatten()
     for i in range(len(ax)):

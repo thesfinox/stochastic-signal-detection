@@ -23,8 +23,8 @@ INPUT:
   E_SCALE:
     BY_VALUE:
       ENABLED: True
-      MIN: 0.0
-      MAX: 0.2
+      MIN: 0.01
+      MAX: 0.25
     BY_MASS_SCALE:
       ENABLED: False
       WIDTH: 0.25
@@ -52,3 +52,4 @@ SIM:
   N_STEPS: 1000
   PERIODIC: False
   IR_TO_UV: False
+  EIGEN_THRESH: 0.1

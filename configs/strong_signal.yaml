@@ -10,7 +10,7 @@ INPUT:
     COLUMNS: 4000
     SEED: 42
   SIGNAL:
-    RATIO: 0.4
+    RATIO: 0.8
     BY_DET:
       ENABLED: False
       RANK: 2500
@@ -23,8 +23,8 @@ INPUT:
   E_SCALE:
     BY_VALUE:
       ENABLED: True
-      MIN: 0.12
-      MAX: 0.3
+      MIN: 0.22
+      MAX: 0.4
     BY_MASS_SCALE:
       ENABLED: False
       WIDTH: 0.25
@@ -52,3 +52,4 @@ SIM:
   N_STEPS: 1000
   PERIODIC: False
   IR_TO_UV: False
+  EIGEN_THRESH: 0.1

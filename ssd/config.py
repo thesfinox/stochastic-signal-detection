@@ -80,5 +80,6 @@ def get_cfg_defaults():
     _C.SIM.N_STEPS = 1000
     _C.SIM.PERIODIC = False
     _C.SIM.IR_TO_UV = False
+    _C.SIM.EIGEN_THRESH = 0.5
 
     return _C.clone()
