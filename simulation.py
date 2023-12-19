@@ -8,7 +8,6 @@ import argparse
 import json
 import sqlite3
 import sys
-from cProfile import label
 from datetime import datetime
 from pathlib import Path
 
@@ -61,7 +60,7 @@ def U_fit_function(x: float, kappa: float, mu0: float, mu1: float,
     Returns
     -------
     float
-        The value of the function at x
+        The value of the function U at x
     """
     return mu0 * (x - kappa)**2 + mu1 * (x - kappa)**3 + mu2 * (x - kappa)**4
 
@@ -87,7 +86,7 @@ def Up_fit_function(x: float, kappa: float, mu0: float, mu1: float,
     Returns
     -------
     float
-        The value of the function at x
+        The value of the function U' at x
     """
     return mu0 * (x-kappa) + mu1 * (x - kappa)**2 + mu2 * (x - kappa)**3
 
@@ -217,6 +216,7 @@ def main(args):
     # Define the energy scale
     log.info("Defining the energy scale...")
     e_scale = cfg.INPUT.E_SCALE
+    force_origin = True
     if e_scale.BY_MASS_SCALE.ENABLED:
         log.debug("Using the mass scale with fixed width as energy scale...")
         width = e_scale.BY_MASS_SCALE.WIDTH
@@ -229,17 +229,19 @@ def main(args):
     elif e_scale.BY_ENDPOINT.ENABLED:
         log.debug("Using the endpoint as energy scale...")
         width = e_scale.BY_ENDPOINT.WIDTH
-        m2_top = width
-        m2_bot = 0.0
+        eps = e_scale.BY_ENDPOINT.EPSILON
+        m2_top = width + eps
+        m2_bot = eps
         if not e_scale.BY_ENDPOINT.SPIKES:
             log.debug("Shifting spikes (PCA)...")
             E_inv_spikes = np.where(
                 np.diff(E_inv) >= cfg.SIM.EIGEN_THRESH)[0] + 1
             E_inv_spikes = E_inv[E_inv_spikes]
+            E_inv_spikes = E_inv_spikes[E_inv_spikes < 10.0 * m2_top]
             if len(E_inv_spikes) > 0:
-                shift = max(E_inv_spikes[E_inv_spikes < m2_top])
-                m2_bot += shift
-                m2_top += shift
+                shift = max(E_inv_spikes)
+                E_inv -= shift
+                force_origin = False
     else:
         raise ValueError('No valid energy scale defined!')
     log.debug(
@@ -252,12 +254,12 @@ def main(args):
     dist = dist.fit(E_inv,
                     n=2,
                     s=cfg.INPUT.BINNING.SMOOTHING,
-                    force_origin=True)
+                    force_origin=force_origin)
     dist_th = TranslatedInverseMarchenkoPastur(L=ratio)
 
     # Plot the distribution (inverse)
     log.info("Plotting the distribution of the simulation...")
-    x = np.linspace(0.0, E_inv.max(), 2500)
+    x = np.linspace(E_inv.min(), E_inv.max(), 2500)
     y = np.array([dist(x_) for x_ in x])
     y_th = np.array([dist_th(x_) for x_ in x])
 
@@ -278,7 +280,7 @@ def main(args):
     plt.savefig(output_dir / 'mp_eigenvalues_inv.png')
     plt.close(fig)
 
-    x = np.linspace(0.0, 0.1 * E_inv.max(), 2500)
+    x = np.linspace(E_inv.min(), 0.1 * E_inv.max(), 2500)
     y = np.array([dist(x_) for x_ in x])
     y_th = np.array([dist_th(x_) for x_ in x])
 
@@ -372,7 +374,8 @@ def main(args):
 
     # Run the simulation
     log.info("Running the simulation...")
-    eq = SSD(dist, noise=0.0, bc=bc)
+    sign = 1 if cfg.SIM.IR_TO_UV else -1
+    eq = SSD(dist, noise=0.0, sign=sign, bc=bc)
     _ = eq.solve(state, t_range=t_range, dt=dt, tracker=trackers)
 
     # Collect the results
@@ -456,7 +459,6 @@ def main(args):
                                 scilimits=(0, 0),
                                 useMathText=True)
             ax.set_title(rf'$k = {time:.5f}$')
-            ax.set_yscale('symlog')
             plt.tight_layout()
             plt.savefig(output_dir / f'u_proj_{n:04d}.png')
             plt.close(fig)
@@ -511,42 +513,53 @@ def main(args):
         mu_0 = mu_bar_0 * k**6 * dist(k**2) / I**2
         mu_1 = mu_bar_1 * k**10 * dist(k**2)**2 / I**4
         mu_2 = mu_bar_2 * k**14 * dist(k**2)**3 / I**6
+        kappa_list.append(kappa)
+        mu_0_list.append(mu_0)
+        mu_1_list.append(mu_1)
+        mu_2_list.append(mu_2)
+        k_list.append(time)
 
-        if not np.isnan([kappa, mu_0, mu_1]).any():
-            kappa_list.append(kappa)
-            mu_0_list.append(mu_0)
-            mu_1_list.append(mu_1)
-            mu_2_list.append(mu_2)
-            k_list.append(time)
-        else:
-            log.warning(
-                "Found NaN values in the dimensional parameters! Skipping...")
+    # Remove the first and last points in the lists
+    k_bar_list = k_bar_list[1:-1]
+    k_list = k_list[1:-1]
+    Up_start_list = Up_start_list[1:-1]
+    Up_end_list = Up_end_list[1:-1]
+    kappa_bar_list = kappa_bar_list[1:-1]
+    mu_bar_0_list = mu_bar_0_list[1:-1]
+    mu_bar_1_list = mu_bar_1_list[1:-1]
+    mu_bar_2_list = mu_bar_2_list[1:-1]
+    kappa_list = kappa_list[1:-1]
+    mu_0_list = mu_0_list[1:-1]
+    mu_1_list = mu_1_list[1:-1]
+    mu_2_list = mu_2_list[1:-1]
+    Up_list = Up_list[1:-1]
+    U_list = U_list[1:-1]
 
     # Convert images to videos
     if cfg.OUTPUT.VIDEO_OUTPUT:
         log.info("Converting images to videos...")
+
         u_proj_video = ffmpeg.input(str(output_dir / 'u_proj_*.png'),
                                     pattern_type='glob',
                                     framerate=60)
         u_proj_video = u_proj_video.output(str(output_dir / 'u_proj.mp4'))
         u_proj_video.run(quiet=True, overwrite_output=True)
+        for f in output_dir.glob('u_proj_*.png'):
+            f.unlink()
+
         up_video = ffmpeg.input(str(output_dir / 'up_*.png'),
                                 pattern_type='glob',
                                 framerate=60)
         up_video = up_video.output(str(output_dir / 'up.mp4'))
         up_video.run(quiet=True, overwrite_output=True)
+        for f in output_dir.glob('up_*.png'):
+            f.unlink()
+
         u_video = ffmpeg.input(str(output_dir / 'u_*.png'),
                                pattern_type='glob',
                                framerate=60)
         u_video = u_video.output(str(output_dir / 'u.mp4'))
         u_video.run(quiet=True, overwrite_output=True)
-
-        # Remove temporary files
-        log.info("Removing temporary files...")
-        for f in output_dir.glob('u_proj_*.png'):
-            f.unlink()
-        for f in output_dir.glob('up_*.png'):
-            f.unlink()
         for f in output_dir.glob('u_*.png'):
             f.unlink()
 
@@ -799,7 +812,7 @@ def main(args):
 
     ax = ax.flatten()
     for i in range(len(ax)):
-        ax[i].ticklabel_format(axis='y',
+        ax[i].ticklabel_format(axis='both',
                                style='sci',
                                scilimits=(0, 0),
                                useMathText=True)

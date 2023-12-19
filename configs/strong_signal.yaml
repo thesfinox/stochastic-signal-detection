@@ -30,7 +30,8 @@ INPUT:
       WIDTH: 0.25
     BY_ENDPOINT:
       ENABLED: True
-      WIDTH: 0.2
+      WIDTH: 0.25
+      EPSILON: 0.025
       SPIKES: False
   INIT:
     BY_TEMP:
@@ -53,7 +54,7 @@ SIM:
   INF: 0.0
   SUP: 1.0
   N_VALUES: 1000
-  N_STEPS: 100
+  N_STEPS: 1000
   PERIODIC: False
   IR_TO_UV: False
   EIGEN_THRESH: 0.025

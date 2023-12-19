@@ -55,6 +55,7 @@ def get_cfg_defaults():
     _C.INPUT.E_SCALE.BY_ENDPOINT = CN()  # energy scale at endpoint
     _C.INPUT.E_SCALE.BY_ENDPOINT.ENABLED = False
     _C.INPUT.E_SCALE.BY_ENDPOINT.WIDTH = 0.2
+    _C.INPUT.E_SCALE.BY_ENDPOINT.EPSILON = 0.0
     _C.INPUT.E_SCALE.BY_ENDPOINT.SPIKES = True
 
     _C.INPUT.INIT = CN()  # initial conditions of the simulation

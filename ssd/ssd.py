@@ -17,6 +17,7 @@ class SSD(PDEBase):
                  dist: BaseDistribution,
                  noise: float = 0.0,
                  epsilon: float = 1.e-9,
+                 sign: int = +1,
                  bc: BoundariesData = 'auto_periodic_neumann'):
         """
         Parameters
@@ -27,6 +28,8 @@ class SSD(PDEBase):
             Noise intensity (default is 0.0)
         epsilon : float
             Small number to avoid division by zero (default is 1.e-9)
+        sign : int
+            Sign of the evolution rate (default is +1, should be positive for IR --> UV, negative for UV --> IR)
         bc : BoundariesData
             Boundary conditions (default is 'auto_periodic_neumann')
 
@@ -38,6 +41,7 @@ class SSD(PDEBase):
         super().__init__(noise=noise)
         self.dist = dist
         self.epsilon = epsilon
+        self.sign = 1 if sign >= 0 else -1
         self.bc = bc
 
     @property
@@ -99,7 +103,7 @@ class SSD(PDEBase):
         Q2 = -2 * num / (den + self.epsilon)
 
         # Compute the final result
-        result = k * self.dist(k2) * (Q1+Q2) / (_I + self.epsilon)
+        result = self.sign * k * self.dist(k2) * (Q1+Q2) / (_I + self.epsilon)
         result.label = 'SSD'
 
         return result
