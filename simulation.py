@@ -445,12 +445,13 @@ def main(args):
 
         # Save the potential curve and its fit in an image object
         if cfg.OUTPUT.VIDEO_OUTPUT:
+            chi = np.linspace(0.75 * kappa_bar, 1.25 * kappa_bar, num=2500)
             U_fit = np.array([
                 U_fit_function(x_, kappa_bar, mu_bar_0, mu_bar_1, mu_bar_2)
-                for x_ in grid.axes_coords[0]
+                for x_ in chi
             ])
             fig, ax = plt.subplots()
-            ax.plot(grid.axes_coords[0], U_fit, 'k-')
+            ax.plot(chi, U_fit, 'k-')
             ax.set_xlabel(r'$\overline{\chi}$')
             ax.set_ylabel(r'$\overline{\mathcal{U}}$')
             ax.set_xlim(cfg.SIM.INF, cfg.SIM.SUP)
