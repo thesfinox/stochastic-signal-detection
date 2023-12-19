@@ -22,12 +22,16 @@ INPUT:
     SMOOTHING: 1.0
   E_SCALE:
     BY_VALUE:
-      ENABLED: True
+      ENABLED: False
       MIN: 0.22
       MAX: 0.4
     BY_MASS_SCALE:
       ENABLED: False
       WIDTH: 0.25
+    BY_ENDPOINT:
+      ENABLED: True
+      WIDTH: 0.2
+      SPIKES: False
   INIT:
     BY_TEMP:
       ENABLED: False
@@ -49,7 +53,7 @@ SIM:
   INF: 0.0
   SUP: 1.0
   N_VALUES: 1000
-  N_STEPS: 1000
+  N_STEPS: 100
   PERIODIC: False
   IR_TO_UV: False
-  EIGEN_THRESH: 0.1
+  EIGEN_THRESH: 0.025

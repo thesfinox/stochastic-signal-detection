@@ -52,6 +52,10 @@ def get_cfg_defaults():
     _C.INPUT.E_SCALE.BY_MASS_SCALE = CN()  # energy scale at mass scale
     _C.INPUT.E_SCALE.BY_MASS_SCALE.ENABLED = True
     _C.INPUT.E_SCALE.BY_MASS_SCALE.WIDTH = 0.25
+    _C.INPUT.E_SCALE.BY_ENDPOINT = CN()  # energy scale at endpoint
+    _C.INPUT.E_SCALE.BY_ENDPOINT.ENABLED = False
+    _C.INPUT.E_SCALE.BY_ENDPOINT.WIDTH = 0.2
+    _C.INPUT.E_SCALE.BY_ENDPOINT.SPIKES = True
 
     _C.INPUT.INIT = CN()  # initial conditions of the simulation
     _C.INPUT.INIT.BY_TEMP = CN()  # choice by temperature

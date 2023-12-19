@@ -208,35 +208,11 @@ def main(args):
     plt.savefig(output_dir / 'mp_eigenvalues.png')
     plt.close(fig)
 
-    # # Compute the distance between consecutive eigenvalues, and if it is too
-    # # large (given by a user defined threshold), then remove the corresponding
-    # # eigenvalues.
-    # log.info("Removing spikes (PCA)...")
-    # E_spikes = np.where(np.diff(E) > cfg.SIM.EIGEN_THRESH)[0] + 1
-    # if len(E_spikes) > 0:
-    #     log.debug(f"Found {len(E_spikes)} spikes!")
-    #     E = np.delete(E, E_spikes)
-    #     log.debug(
-    #         f"New eigenvalues:\nlambda_max = {E.max()}\nlambda_min = {E.min()}")
-
-    #     # Plot the distribution of the eigenvalues
-    #     log.info("Plotting the distribution of the eigenvalues...")
-    #     x = np.linspace(0.0, 1.05 * E.max(), 2500)
-    #     y = np.array([mp(x_) for x_ in x])
-    #     fig, ax = plt.subplots()
-    #     ax.hist(E,
-    #             bins=cfg.INPUT.BINNING.BINS,
-    #             density=True,
-    #             color='b',
-    #             alpha=0.5,
-    #             label='eigenvalues')
-    #     ax.plot(x, y, 'r-', label='MP')
-    #     ax.set_xlabel(r'$\lambda$')
-    #     ax.set_ylabel(r'$\mu(\lambda)$')
-    #     ax.legend()
-    #     plt.tight_layout()
-    #     plt.savefig(output_dir / 'mp_eigenvalues_no_spikes.png')
-    #     plt.close(fig)
+    # Compute the inverse of the eigenvalues
+    log.info("Computing the inverse of the eigenvalues...")
+    E_inv = np.flip(1 / E)
+    log.debug(f"Momenta:\nk2_max = {E_inv.max()}\nk2_min = {E_inv.min()}")
+    E_inv -= E_inv.min()
 
     # Define the energy scale
     log.info("Defining the energy scale...")
@@ -250,15 +226,25 @@ def main(args):
         log.debug("Using a fixed energy scale...")
         m2_top = e_scale.BY_VALUE.MAX
         m2_bot = e_scale.BY_VALUE.MIN
+    elif e_scale.BY_ENDPOINT.ENABLED:
+        log.debug("Using the endpoint as energy scale...")
+        width = e_scale.BY_ENDPOINT.WIDTH
+        m2_top = width
+        m2_bot = 0.0
+        if not e_scale.BY_ENDPOINT.SPIKES:
+            log.debug("Shifting spikes (PCA)...")
+            E_inv_spikes = np.where(
+                np.diff(E_inv) >= cfg.SIM.EIGEN_THRESH)[0] + 1
+            E_inv_spikes = E_inv[E_inv_spikes]
+            if len(E_inv_spikes) > 0:
+                shift = max(E_inv_spikes[E_inv_spikes < m2_top])
+                m2_bot += shift
+                m2_top += shift
+    else:
+        raise ValueError('No valid energy scale defined!')
     log.debug(
         f"Energy scale of the integration:\nk2_max = {m2_top}\nk2_min = {m2_bot}"
     )
-
-    # Compute the inverse of the eigenvalues
-    log.info("Computing the inverse of the eigenvalues...")
-    E_inv = np.flip(1 / E)
-    log.debug(f"Momenta:\nk2_max = {E_inv.max()}\nk2_min = {E_inv.min()}")
-    E_inv -= E_inv.min()
 
     # Define the distribution of the simulation
     log.info("Defining the distribution of the simulation...")
