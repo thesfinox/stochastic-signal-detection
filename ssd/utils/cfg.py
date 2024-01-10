@@ -123,3 +123,14 @@ def get_params(config: str = None, arguments: List[str] = None) -> CN:
     logger.info(header(config, cfg))
 
     return cfg
+
+def print_config(cfg: CN) -> None:
+    """
+    Print the configuration parameters.
+
+    Parameters
+    ----------
+    cfg : yacs.config.CfgNode
+        Configuration parameters.
+    """
+    print(cfg.dump())

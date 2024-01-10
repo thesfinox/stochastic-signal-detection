@@ -21,12 +21,11 @@ from scipy.integrate import simpson
 from tqdm import tqdm
 
 from ssd import __version__
-from ssd.distributions import (InterpolateDistribution,
-                               MarchenkoPastur,
+from ssd.distributions import (InterpolateDistribution, MarchenkoPastur,
                                SpecularReflection,
                                TranslatedInverseMarchenkoPastur)
 from ssd.ssd import SSD
-from ssd.utils.cfg import get_params, logger
+from ssd.utils.cfg import get_params, logger, print_config
 from ssd.utils.matrix import create_bulk, create_signal
 
 mpl.use('agg')
@@ -62,7 +61,10 @@ def U_fit_function(x: float, kappa: float, mu0: float, mu1: float,
     float
         The value of the function U at x
     """
-    return mu0 * (x - kappa)**2 + mu1 * (x - kappa)**3 + mu2 * (x - kappa)**4
+    quad = mu0 * (x - kappa)**2 / 2
+    cub = mu1 * (x - kappa)**3 / 3
+    quart = mu2 * (x - kappa)**4 / 4
+    return quad + cub + quart
 
 
 def Up_fit_function(x: float, kappa: float, mu0: float, mu1: float,
@@ -88,14 +90,20 @@ def Up_fit_function(x: float, kappa: float, mu0: float, mu1: float,
     float
         The value of the function U' at x
     """
-    return mu0 * (x-kappa) + mu1 * (x - kappa)**2 + mu2 * (x - kappa)**3
+    quad = mu0 * (x - kappa)
+    cub = mu1 * (x - kappa)**2
+    quart = mu2 * (x - kappa)**3
+    return quad + cub + quart
 
 
 def main(args):
 
     # Organize the arguments
-    log = logger(args.log)
     cfg = get_params(args.config, args.arguments)
+    if args.print_config:
+        print_config(cfg)
+        sys.exit(0)
+    log = logger(args.log)
 
     # Create the output directory
     output_dir = Path(cfg.OUTPUT.OUTPUT_DIR)
@@ -116,6 +124,7 @@ def main(args):
         mu_bar_1_0 = init.BY_INIT.MU_1
         mu_bar_2_0 = init.BY_INIT.MU_2
         expr = f'{mu_bar_0_0} * (x - {kappa_bar_0}) + {mu_bar_1_0} * (x - {kappa_bar_0})**2 + {mu_bar_2_0} * (x - {kappa_bar_0})**3'
+        pot = f'{mu_bar_0_0} * (x - {kappa_bar_0})**2 / 2 + {mu_bar_1_0} * (x - {kappa_bar_0})**3 / 3 + {mu_bar_2_0} * (x - {kappa_bar_0})**4 / 4'
     elif init.BY_PARAMS.ENABLED:
         log.debug("Init by parameters...")
         mu_bar_0_0 = init.BY_PARAMS.MU_0
@@ -123,6 +132,7 @@ def main(args):
         mu_bar_2_0 = init.BY_PARAMS.MU_2
         mu_bar_3_0 = init.BY_PARAMS.MU_3
         expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2 + {mu_bar_3_0} * x**3'
+        pot = f'{mu_bar_0_0} * x + {mu_bar_1_0} * x**2 / 2 + {mu_bar_2_0} * x**3 / 3 + {mu_bar_3_0} * x**4 / 4'
     elif init.BY_TEMP.ENABLED:
         log.debug("Init by temperature...")
         T = init.BY_TEMP.T
@@ -132,9 +142,10 @@ def main(args):
         mu_bar_2_0 = T**2
         mu_bar_3_0 = T**4
         expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2 + {mu_bar_3_0} * x**3'
+        pot = f'{mu_bar_0_0} * x + {mu_bar_1_0} * x**2 / 2 + {mu_bar_2_0} * x**3 / 3 + {mu_bar_3_0} * x**4 / 4'
     else:
         raise ValueError('No valid initial conditions defined!')
-    log.debug(f"Initial conditions: {expr}")
+    log.debug(f"Initial conditions:\nU' = {expr}\nU = {pot}")
 
     # Define the bulk distribution
     log.info('Defining the bulk distribution...')
@@ -833,12 +844,15 @@ if __name__ == '__main__':
     parser.add_argument('arguments',
                         nargs='*',
                         metavar='ARG',
-                        help='configuration list')
+                        help='configuration arguments (KEY1 VALUE1 KEY2 VALUE2...)')
     parser.add_argument('--log', type=str, default=None, help='log file')
-    parser.add_argument('--config',
+    config = parser.add_mutually_exclusive_group(required=True)
+    config.add_argument('--config',
                         type=str,
-                        required=True,
                         help='configuration file')
+    config.add_argument('--print-config',
+                        action='store_true',
+                        help='print the configuration and exit')
     parser.add_argument('--version',
                         action='version',
                         version=f'%(prog)s - v{__version__}')

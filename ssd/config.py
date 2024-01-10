@@ -16,7 +16,7 @@ def get_cfg_defaults():
     _C.OUTPUT = CN()  # output parameters
 
     _C.OUTPUT.OUTPUT_DIR = 'simulation'
-    _C.OUTPUT.VIDEO_OUTPUT = False
+    _C.OUTPUT.VIDEO_OUTPUT = True
 
     _C.OUTPUT.DB = CN()  # database parameters
 
@@ -27,17 +27,17 @@ def get_cfg_defaults():
     _C.INPUT = CN()  # input parameters
 
     _C.INPUT.MATRIX = CN()  # matrix parameters
-    _C.INPUT.MATRIX.ROWS = 1000
-    _C.INPUT.MATRIX.COLUMNS = 800
+    _C.INPUT.MATRIX.ROWS = 10000
+    _C.INPUT.MATRIX.COLUMNS = 8000
     _C.INPUT.MATRIX.SEED = 42
 
     _C.INPUT.SIGNAL = CN()  # signal parameters
-    _C.INPUT.SIGNAL.RATIO = 0.5
+    _C.INPUT.SIGNAL.RATIO = 0.0
     _C.INPUT.SIGNAL.BY_DET = CN()  # signal by deterministic matrix
-    _C.INPUT.SIGNAL.BY_DET.ENABLED = True
-    _C.INPUT.SIGNAL.BY_DET.RANK = 500
+    _C.INPUT.SIGNAL.BY_DET.ENABLED = False
+    _C.INPUT.SIGNAL.BY_DET.RANK = 2500
     _C.INPUT.SIGNAL.BY_IMG = CN()  # signal by image
-    _C.INPUT.SIGNAL.BY_IMG.ENABLED = False
+    _C.INPUT.SIGNAL.BY_IMG.ENABLED = True
     _C.INPUT.SIGNAL.BY_IMG.FILE = 'image.png'
 
     _C.INPUT.BINNING = CN()  # binning parameters
@@ -50,13 +50,13 @@ def get_cfg_defaults():
     _C.INPUT.E_SCALE.BY_VALUE.MIN = 0.0
     _C.INPUT.E_SCALE.BY_VALUE.MAX = 1.0
     _C.INPUT.E_SCALE.BY_MASS_SCALE = CN()  # energy scale at mass scale
-    _C.INPUT.E_SCALE.BY_MASS_SCALE.ENABLED = True
+    _C.INPUT.E_SCALE.BY_MASS_SCALE.ENABLED = False
     _C.INPUT.E_SCALE.BY_MASS_SCALE.WIDTH = 0.25
     _C.INPUT.E_SCALE.BY_ENDPOINT = CN()  # energy scale at endpoint
-    _C.INPUT.E_SCALE.BY_ENDPOINT.ENABLED = False
-    _C.INPUT.E_SCALE.BY_ENDPOINT.WIDTH = 0.2
-    _C.INPUT.E_SCALE.BY_ENDPOINT.EPSILON = 0.0
-    _C.INPUT.E_SCALE.BY_ENDPOINT.SPIKES = True
+    _C.INPUT.E_SCALE.BY_ENDPOINT.ENABLED = True
+    _C.INPUT.E_SCALE.BY_ENDPOINT.WIDTH = 0.25
+    _C.INPUT.E_SCALE.BY_ENDPOINT.EPSILON = 0.01
+    _C.INPUT.E_SCALE.BY_ENDPOINT.SPIKES = False
 
     _C.INPUT.INIT = CN()  # initial conditions of the simulation
     _C.INPUT.INIT.BY_TEMP = CN()  # choice by temperature
@@ -71,10 +71,10 @@ def get_cfg_defaults():
     _C.INPUT.INIT.BY_PARAMS.MU_3 = 0.0
     _C.INPUT.INIT.BY_INIT = CN()  # choice by initial conditions
     _C.INPUT.INIT.BY_INIT.ENABLED = True
-    _C.INPUT.INIT.BY_INIT.KAPPA_0 = 0.5
+    _C.INPUT.INIT.BY_INIT.KAPPA_0 = 0.0
     _C.INPUT.INIT.BY_INIT.MU_0 = 1.0
     _C.INPUT.INIT.BY_INIT.MU_1 = 1.0
-    _C.INPUT.INIT.BY_INIT.MU_2 = 1.0
+    _C.INPUT.INIT.BY_INIT.MU_2 = 0.0
 
     # Simulation parameters
     _C.SIM = CN()  # simulation parameters
@@ -82,9 +82,9 @@ def get_cfg_defaults():
     _C.SIM.INF = 0.0
     _C.SIM.SUP = 1.0
     _C.SIM.N_VALUES = 1000
-    _C.SIM.N_STEPS = 1000
+    _C.SIM.N_STEPS = 2000
     _C.SIM.PERIODIC = False
     _C.SIM.IR_TO_UV = False
-    _C.SIM.EIGEN_THRESH = 0.5
+    _C.SIM.EIGEN_THRESH = 0.01
 
     return _C.clone()
