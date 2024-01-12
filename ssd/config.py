@@ -34,15 +34,15 @@ def get_cfg_defaults():
     _C.INPUT.SIGNAL = CN()  # signal parameters
     _C.INPUT.SIGNAL.RATIO = 0.0
     _C.INPUT.SIGNAL.BY_DET = CN()  # signal by deterministic matrix
-    _C.INPUT.SIGNAL.BY_DET.ENABLED = False
+    _C.INPUT.SIGNAL.BY_DET.ENABLED = True
     _C.INPUT.SIGNAL.BY_DET.RANK = 2500
     _C.INPUT.SIGNAL.BY_IMG = CN()  # signal by image
-    _C.INPUT.SIGNAL.BY_IMG.ENABLED = True
+    _C.INPUT.SIGNAL.BY_IMG.ENABLED = False
     _C.INPUT.SIGNAL.BY_IMG.FILE = 'image.png'
 
     _C.INPUT.BINNING = CN()  # binning parameters
     _C.INPUT.BINNING.BINS = 100
-    _C.INPUT.BINNING.SMOOTHING = 0.3
+    _C.INPUT.BINNING.SMOOTHING = 0.35
 
     _C.INPUT.E_SCALE = CN()  # energy scale of the simulation
     _C.INPUT.E_SCALE.BY_VALUE = CN()  # fixed energy scale
@@ -55,7 +55,7 @@ def get_cfg_defaults():
     _C.INPUT.E_SCALE.BY_ENDPOINT = CN()  # energy scale at endpoint
     _C.INPUT.E_SCALE.BY_ENDPOINT.ENABLED = True
     _C.INPUT.E_SCALE.BY_ENDPOINT.WIDTH = 0.25
-    _C.INPUT.E_SCALE.BY_ENDPOINT.EPSILON = 0.01
+    _C.INPUT.E_SCALE.BY_ENDPOINT.EPSILON = 0.0
     _C.INPUT.E_SCALE.BY_ENDPOINT.SPIKES = False
 
     _C.INPUT.INIT = CN()  # initial conditions of the simulation

@@ -21,7 +21,8 @@ from scipy.integrate import simpson
 from tqdm import tqdm
 
 from ssd import __version__
-from ssd.distributions import (InterpolateDistribution, MarchenkoPastur,
+from ssd.distributions import (InterpolateDistribution,
+                               MarchenkoPastur,
                                SpecularReflection,
                                TranslatedInverseMarchenkoPastur)
 from ssd.ssd import SSD
@@ -90,7 +91,7 @@ def Up_fit_function(x: float, kappa: float, mu0: float, mu1: float,
     float
         The value of the function U' at x
     """
-    quad = mu0 * (x - kappa)
+    quad = mu0 * (x-kappa)
     cub = mu1 * (x - kappa)**2
     quart = mu2 * (x - kappa)**3
     return quad + cub + quart
@@ -168,7 +169,7 @@ def main(args):
         image = Image.open(signal.BY_IMG.FILE)
         image = image.convert('L')
         image = image.resize(Z.shape[::-1])
-        S = np.array(image) / 255.0
+        S = 2 * (np.array(image) / 255.0) - 1
     else:
         raise ValueError('No valid signal defined!')
 
@@ -189,8 +190,58 @@ def main(args):
     plt.savefig(output_dir / 'signal_matrix.png')
     plt.close(fig)
 
+    # Compute the eigenvalues of the signal and background separately
+    Cz = np.cov(Z, rowvar=False)
+    Cs = np.cov(signal.RATIO * S, rowvar=False)
+    Ez = np.linalg.eigvalsh(Cz)
+    Es = np.linalg.eigvalsh(Cs)
+
+    # Plot the two distributions
+    fig, ax = plt.subplots()
+    ax.hist(Ez,
+            bins=cfg.INPUT.BINNING.BINS,
+            density=True,
+            color='b',
+            alpha=0.5,
+            label='background')
+    ax.hist(Es,
+            bins=cfg.INPUT.BINNING.BINS,
+            density=True,
+            color='r',
+            alpha=0.5,
+            label='signal')
+    ax.set_xlabel(r'$\lambda$')
+    ax.set_ylabel(r'$\mu(\lambda)$')
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(output_dir / 'eval_comp.png')
+    plt.close(fig)
+
+    # Select only the eigenvalues of the signal within the bulk region
+    Es = Es[Es <= Ez.max()]
+    fig, ax = plt.subplots()
+    ax.hist(Ez,
+            bins=cfg.INPUT.BINNING.BINS,
+            density=True,
+            color='b',
+            alpha=0.5,
+            label='background')
+    ax.hist(Es,
+            bins=cfg.INPUT.BINNING.BINS,
+            density=True,
+            color='r',
+            alpha=0.5,
+            label='signal')
+    ax.set_xlim(0.0, 1.05 * Ez.max())
+    ax.set_xlabel(r'$\lambda$')
+    ax.set_ylabel(r'$\mu(\lambda)$')
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(output_dir / 'eval_comp_zoom.png')
+    plt.close(fig)
+
     # Compute the eigenvalues of the covariance matrix
-    log.debug("Computing the eigenvalues of the covariance matrix...")
+    log.debug("Computing the eigenvalues of the full covariance matrix...")
     E = np.linalg.eigvalsh(C)
     log.debug(f"Eigenvalues:\nlambda_max = {E.max()}\nlambda_min = {E.min()}")
 
@@ -521,15 +572,20 @@ def main(args):
         # $$
         I = dist.integrate(0, k, moment=1, power=2)[0]
 
-        kappa = kappa_bar * I**2 / k**4 / dist(k**2)
-        mu_0 = mu_bar_0 * k**6 * dist(k**2) / I**2
-        mu_1 = mu_bar_1 * k**10 * dist(k**2)**2 / I**4
-        mu_2 = mu_bar_2 * k**14 * dist(k**2)**3 / I**6
-        kappa_list.append(kappa)
-        mu_0_list.append(mu_0)
-        mu_1_list.append(mu_1)
-        mu_2_list.append(mu_2)
-        k_list.append(time)
+        # kappa = kappa_bar * I**2 / k**4 / dist(k**2)
+        # mu_0 = mu_bar_0 * k**6 * dist(k**2) / I**2
+        # mu_1 = mu_bar_1 * k**10 * dist(k**2)**2 / I**4
+        # mu_2 = mu_bar_2 * k**14 * dist(k**2)**3 / I**6
+        if n > 0:
+            kappa = 1 / (I**2 / k**4 / dist(k**2))
+            mu_0 = 1 / (k**6 * dist(k**2) / I**2)
+            mu_1 = 1 / (k**10 * dist(k**2)**2 / I**4)
+            mu_2 = 1 / (k**14 * dist(k**2)**3 / I**6)
+            kappa_list.append(kappa)
+            mu_0_list.append(mu_0)
+            mu_1_list.append(mu_1)
+            mu_2_list.append(mu_2)
+            k_list.append(time)
 
     # Remove the first and last points in the lists
     k_bar_list = k_bar_list[1:-1]
@@ -834,6 +890,16 @@ def main(args):
     plt.savefig(output_dir / 'simulation.png')
     plt.close(fig)
 
+    # Record the last expression
+    kappa_bar = kappa_bar_list[-1]
+    mu_bar_0 = mu_bar_0_list[-1]
+    mu_bar_1 = mu_bar_1_list[-1]
+    mu_bar_2 = mu_bar_2_list[-1]
+    expr = f'{mu_bar_0} * (x - {kappa_bar}) + {mu_bar_1} * (x - {kappa_bar})**2 + {mu_bar_2} * (x - {kappa_bar})**3'
+    pot = f'{mu_bar_0} * (x - {kappa_bar})**2 / 2 + {mu_bar_1} * (x - {kappa_bar})**3 / 3 + {mu_bar_2} * (x - {kappa_bar})**4 / 4'
+    log.info(f'Final expression:\nU\' = {expr}\nU = {pot}')
+
+    log.info("Done!")
     return 0
 
 
@@ -841,15 +907,14 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=__description__,
                                      epilog=__epilog__)
-    parser.add_argument('arguments',
-                        nargs='*',
-                        metavar='ARG',
-                        help='configuration arguments (KEY1 VALUE1 KEY2 VALUE2...)')
+    parser.add_argument(
+        'arguments',
+        nargs='*',
+        metavar='ARG',
+        help='configuration arguments (KEY1 VALUE1 KEY2 VALUE2...)')
     parser.add_argument('--log', type=str, default=None, help='log file')
     config = parser.add_mutually_exclusive_group(required=True)
-    config.add_argument('--config',
-                        type=str,
-                        help='configuration file')
+    config.add_argument('--config', type=str, help='configuration file')
     config.add_argument('--print-config',
                         action='store_true',
                         help='print the configuration and exit')
