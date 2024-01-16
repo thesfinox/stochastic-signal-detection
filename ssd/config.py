@@ -45,6 +45,7 @@ def get_cfg_defaults():
     _C.INPUT.BINNING.SMOOTHING = 0.35
 
     _C.INPUT.E_SCALE = CN()  # energy scale of the simulation
+    _C.INPUT.E_SCALE.SPIKES = False
     _C.INPUT.E_SCALE.BY_VALUE = CN()  # fixed energy scale
     _C.INPUT.E_SCALE.BY_VALUE.ENABLED = False
     _C.INPUT.E_SCALE.BY_VALUE.MIN = 0.0
@@ -54,9 +55,13 @@ def get_cfg_defaults():
     _C.INPUT.E_SCALE.BY_MASS_SCALE.WIDTH = 0.25
     _C.INPUT.E_SCALE.BY_ENDPOINT = CN()  # energy scale at endpoint
     _C.INPUT.E_SCALE.BY_ENDPOINT.ENABLED = True
+    _C.INPUT.E_SCALE.BY_ENDPOINT.BY_WIDTH = True
     _C.INPUT.E_SCALE.BY_ENDPOINT.WIDTH = 0.25
+    _C.INPUT.E_SCALE.BY_ENDPOINT.KAPPA = 0.25
     _C.INPUT.E_SCALE.BY_ENDPOINT.EPSILON = 0.0
-    _C.INPUT.E_SCALE.BY_ENDPOINT.SPIKES = False
+    _C.INPUT.E_SCALE.BY_MAX = CN()  # energy scale at maximum of inverse MP
+    _C.INPUT.E_SCALE.BY_MAX.ENABLED = False
+    _C.INPUT.E_SCALE.BY_MAX.EPSILON = 0.0
 
     _C.INPUT.INIT = CN()  # initial conditions of the simulation
     _C.INPUT.INIT.BY_TEMP = CN()  # choice by temperature
@@ -72,9 +77,9 @@ def get_cfg_defaults():
     _C.INPUT.INIT.BY_INIT = CN()  # choice by initial conditions
     _C.INPUT.INIT.BY_INIT.ENABLED = True
     _C.INPUT.INIT.BY_INIT.KAPPA_0 = 0.0
-    _C.INPUT.INIT.BY_INIT.MU_0 = 1.0
-    _C.INPUT.INIT.BY_INIT.MU_1 = 1.0
-    _C.INPUT.INIT.BY_INIT.MU_2 = 0.0
+    _C.INPUT.INIT.BY_INIT.MU_4 = 1.0
+    _C.INPUT.INIT.BY_INIT.MU_6 = 1.0
+    _C.INPUT.INIT.BY_INIT.MU_8 = 0.0
 
     # Simulation parameters
     _C.SIM = CN()  # simulation parameters

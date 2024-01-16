@@ -1,5 +1,5 @@
 OUTPUT:
-  OUTPUT_DIR: "strong_signal"
+  OUTPUT_DIR: "strong_signal_v2"
   VIDEO_OUTPUT: True
   DB:
     OUTPUT_FILE: "simulation.sqlite"
@@ -10,7 +10,7 @@ INPUT:
     COLUMNS: 4000
     SEED: 42
   SIGNAL:
-    RATIO: 0.8
+    RATIO: 1.5
     BY_DET:
       ENABLED: False
       RANK: 2500
@@ -23,16 +23,20 @@ INPUT:
   E_SCALE:
     BY_VALUE:
       ENABLED: False
-      MIN: 0.22
-      MAX: 0.4
+      MIN: 0.0025
+      MAX: 0.100
     BY_MASS_SCALE:
       ENABLED: False
       WIDTH: 0.25
     BY_ENDPOINT:
+      ENABLED: False
+      BY_WIDTH: False
+      WIDTH: 20.0
+      EPSILON: 0.0025
+    SPIKES: False
+    BY_MAX:
       ENABLED: True
-      WIDTH: 0.25
-      EPSILON: 0.025
-      SPIKES: False
+      EPSILON: 0.0025
   INIT:
     BY_TEMP:
       ENABLED: False
@@ -47,14 +51,14 @@ INPUT:
     BY_INIT:
       ENABLED: True
       KAPPA_0: 0.0
-      MU_0: 1.0
-      MU_1: 1.0
-      MU_2: 0.0
+      MU_4: 1.0
+      MU_6: 1.0
+      MU_8: 0.0
 SIM:
   INF: 0.0
   SUP: 1.0
   N_VALUES: 1000
-  N_STEPS: 1000
+  N_STEPS: 100
   PERIODIC: False
   IR_TO_UV: False
   EIGEN_THRESH: 0.025

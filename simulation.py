@@ -121,9 +121,9 @@ def main(args):
     if init.BY_INIT.ENABLED:
         log.debug("Init by initial conditions...")
         kappa_bar_0 = init.BY_INIT.KAPPA_0
-        mu_bar_0_0 = init.BY_INIT.MU_0
-        mu_bar_1_0 = init.BY_INIT.MU_1
-        mu_bar_2_0 = init.BY_INIT.MU_2
+        mu_bar_0_0 = init.BY_INIT.MU_4
+        mu_bar_1_0 = init.BY_INIT.MU_6
+        mu_bar_2_0 = init.BY_INIT.MU_8
         expr = f'{mu_bar_0_0} * (x - {kappa_bar_0}) + {mu_bar_1_0} * (x - {kappa_bar_0})**2 + {mu_bar_2_0} * (x - {kappa_bar_0})**3'
         pot = f'{mu_bar_0_0} * (x - {kappa_bar_0})**2 / 2 + {mu_bar_1_0} * (x - {kappa_bar_0})**3 / 3 + {mu_bar_2_0} * (x - {kappa_bar_0})**4 / 4'
     elif init.BY_PARAMS.ENABLED:
@@ -141,7 +141,7 @@ def main(args):
         mu_bar_0_0 = T - TC
         mu_bar_1_0 = T
         mu_bar_2_0 = T**2
-        mu_bar_3_0 = T**4
+        mu_bar_3_0 = T**3
         expr = f'{mu_bar_0_0} + {mu_bar_1_0} * x + {mu_bar_2_0} * x**2 + {mu_bar_3_0} * x**3'
         pot = f'{mu_bar_0_0} * x + {mu_bar_1_0} * x**2 / 2 + {mu_bar_2_0} * x**3 / 3 + {mu_bar_3_0} * x**4 / 4'
     else:
@@ -292,24 +292,27 @@ def main(args):
         log.debug("Using the endpoint as energy scale...")
         width = e_scale.BY_ENDPOINT.WIDTH
         eps = e_scale.BY_ENDPOINT.EPSILON
-        m2_top = width + eps
-        m2_bot = eps
-        if not e_scale.BY_ENDPOINT.SPIKES:
-            log.debug("Shifting spikes (PCA)...")
-            E_inv_spikes = np.where(
-                np.diff(E_inv) >= cfg.SIM.EIGEN_THRESH)[0] + 1
-            E_inv_spikes = E_inv[E_inv_spikes]
-            E_inv_spikes = E_inv_spikes[E_inv_spikes < 10.0 * m2_top]
-            if len(E_inv_spikes) > 0:
-                shift = max(E_inv_spikes)
-                E_inv -= shift
-                force_origin = False
+        if e_scale.BY_ENDPOINT.BY_WIDTH:
+            m2_top = width + eps
+            m2_bot = eps
+        else:
+            m2_top = 1 / (mp.max + width)
+            m2_bot = eps
+    elif e_scale.BY_MAX.ENABLED:
+        log.debug("Using the maximum of the inverse MP as energy scale...")
+        m2_top = 1 / mp.max
+        m2_bot = 0.0
+    if not e_scale.SPIKES:
+        log.debug("Shifting spikes (PCA)...")
+        E_inv_spikes = np.where(np.diff(E_inv) >= cfg.SIM.EIGEN_THRESH)[0] + 1
+        E_inv_spikes = E_inv[E_inv_spikes]
+        E_inv_spikes = E_inv_spikes[E_inv_spikes < 10.0 * m2_top]
+        if len(E_inv_spikes) > 0:
+            shift = max(E_inv_spikes)
+            E_inv -= shift
+            force_origin = False
     else:
         raise ValueError('No valid energy scale defined!')
-    log.debug(
-        f"Energy scale of the integration:\nk2_max = {m2_top}\nk2_min = {m2_bot}"
-    )
-
     # Define the distribution of the simulation
     log.info("Defining the distribution of the simulation...")
     dist = InterpolateDistribution(bins=cfg.INPUT.BINNING.BINS**2)
@@ -324,6 +327,19 @@ def main(args):
     x = np.linspace(E_inv.min(), E_inv.max(), 2500)
     y = np.array([dist(x_) for x_ in x])
     y_th = np.array([dist_th(x_) for x_ in x])
+
+    # Redefine the mass scale if the simulations uses the max of the inverse
+    # MP distribution as top energy scale
+    if e_scale.BY_MAX.ENABLED:
+        log.debug(
+            'Redefining the energy scale (by the max of the inverse MP)...')
+        x_zoom = np.linspace(0.0, 1.0, 2500)
+        y_zoom = np.array([dist(x_) for x_ in x_zoom])
+        m2_top = x_zoom[y_zoom.argmax()]
+        m2_bot = e_scale.BY_MAX.EPSILON
+    log.debug(
+        f"Energy scale of the integration:\nk2_max = {m2_top}\nk2_min = {m2_bot}"
+    )
 
     fig, ax = plt.subplots()
     ax.hist(E_inv,
@@ -449,10 +465,10 @@ def main(args):
     mu_bar_0_list = []
     mu_bar_1_list = []
     mu_bar_2_list = []
-    kappa_list = []
-    mu_0_list = []
-    mu_1_list = []
-    mu_2_list = []
+    prefac_kappa_bar_list = []
+    prefac_mu_4_bar_list = []
+    prefac_mu_6_bar_list = []
+    prefac_mu_8_bar_list = []
     Up_list = []
     U_list = []
     items = tqdm(storage.items(),
@@ -478,11 +494,11 @@ def main(args):
         #  $$
         #    \overline{\mathcal{U}}^{\prime}[\overline{\chi}]
         #    =
-        #    \overline{\mu_0} (\overline{\chi} - \overline{\kappa})
+        #    \overline{\mu_4} (\overline{\chi} - \overline{\kappa})
         #    +
-        #    \overline{\mu_1} (\overline{\chi} - \overline{\kappa})^2,
+        #    \overline{\mu_6} (\overline{\chi} - \overline{\kappa})^2,
         #    +
-        #    \overline{\mu_2} (\overline{\chi} - \overline{\kappa})^3,
+        #    \overline{\mu_8} (\overline{\chi} - \overline{\kappa})^3,
         #  $$
         #  where $\overline{\kappa}$ is the location of the minimum of the potential
         #  $\overline{\mathcal{U}}$.
@@ -566,25 +582,25 @@ def main(args):
         # $$
         #   \kappa = \rho(k^2) \dot{s}^2 \overline{\kappa},
         #  \quad
-        #  \mu_0 = \frac{k^2}{\rho(k^2) \dot{s}^2} \overline{\mu_0},
+        #  \mu_4 = \frac{k^2}{\rho(k^2) \dot{s}^2} \overline{\mu_4},
         #  \quad
-        #  \mu_1 = \frac{k^2}{\rho(k^2)^2 \dot{s}^4} \overline{\mu_1}.
+        #  \mu_6 = \frac{k^2}{\rho(k^2)^2 \dot{s}^4} \overline{\mu_6}.
         # $$
         I = dist.integrate(0, k, moment=1, power=2)[0]
 
         # kappa = kappa_bar * I**2 / k**4 / dist(k**2)
-        # mu_0 = mu_bar_0 * k**6 * dist(k**2) / I**2
-        # mu_1 = mu_bar_1 * k**10 * dist(k**2)**2 / I**4
-        # mu_2 = mu_bar_2 * k**14 * dist(k**2)**3 / I**6
+        # mu_4 = mu_bar_0 * k**6 * dist(k**2) / I**2
+        # mu_6 = mu_bar_1 * k**10 * dist(k**2)**2 / I**4
+        # mu_8 = mu_bar_2 * k**14 * dist(k**2)**3 / I**6
         if n > 0:
-            kappa = 1 / (I**2 / k**4 / dist(k**2))
-            mu_0 = 1 / (k**6 * dist(k**2) / I**2)
-            mu_1 = 1 / (k**10 * dist(k**2)**2 / I**4)
-            mu_2 = 1 / (k**14 * dist(k**2)**3 / I**6)
-            kappa_list.append(kappa)
-            mu_0_list.append(mu_0)
-            mu_1_list.append(mu_1)
-            mu_2_list.append(mu_2)
+            prefac_kappa_bar = 1 / (I**2 / k**4 / dist(k**2))
+            prefac_mu_4_bar = 1 / (k**6 * dist(k**2) / I**2)
+            prefac_mu_6_bar = 1 / (k**10 * dist(k**2)**2 / I**4)
+            prefac_mu_8_bar = 1 / (k**14 * dist(k**2)**3 / I**6)
+            prefac_kappa_bar_list.append(prefac_kappa_bar)
+            prefac_mu_4_bar_list.append(prefac_mu_4_bar)
+            prefac_mu_6_bar_list.append(prefac_mu_6_bar)
+            prefac_mu_8_bar_list.append(prefac_mu_8_bar)
             k_list.append(time)
 
     # Remove the first and last points in the lists
@@ -596,12 +612,36 @@ def main(args):
     mu_bar_0_list = mu_bar_0_list[1:-1]
     mu_bar_1_list = mu_bar_1_list[1:-1]
     mu_bar_2_list = mu_bar_2_list[1:-1]
-    kappa_list = kappa_list[1:-1]
-    mu_0_list = mu_0_list[1:-1]
-    mu_1_list = mu_1_list[1:-1]
-    mu_2_list = mu_2_list[1:-1]
+    prefac_kappa_bar_list = prefac_kappa_bar_list[1:-1]
+    prefac_mu_4_bar_list = prefac_mu_4_bar_list[1:-1]
+    prefac_mu_6_bar_list = prefac_mu_6_bar_list[1:-1]
+    prefac_mu_8_bar_list = prefac_mu_8_bar_list[1:-1]
     Up_list = Up_list[1:-1]
     U_list = U_list[1:-1]
+
+    # Convert the prefactors to dimensions
+    dk = np.abs(np.diff(k_list))
+
+    k_list = np.array(k_list)[:-1]
+    Ik = np.array([dist.integrate(0, k, moment=1, power=2)[0] for k in k_list])
+    rhok = np.array([dist(k**2) for k in k_list])
+    P = Ik / rhok / k_list
+
+    diff_kappa_bar = np.diff(prefac_kappa_bar_list) / dk
+    diff_mu_4_bar = np.diff(prefac_mu_4_bar_list) / dk
+    diff_mu_6_bar = np.diff(prefac_mu_6_bar_list) / dk
+    diff_mu_8_bar = np.diff(prefac_mu_8_bar_list) / dk
+
+    dim_kappa_bar_list = diff_kappa_bar * P / np.array(
+        prefac_kappa_bar_list)[:-1]
+    dim_mu_4_bar_list = diff_mu_4_bar * P / np.array(prefac_mu_4_bar_list)[:-1]
+    dim_mu_6_bar_list = diff_mu_6_bar * P / np.array(prefac_mu_6_bar_list)[:-1]
+    dim_mu_8_bar_list = diff_mu_8_bar * P / np.array(prefac_mu_8_bar_list)[:-1]
+
+    dim_kappa_bar_list = list(dim_kappa_bar_list)
+    dim_mu_4_bar_list = list(dim_mu_4_bar_list)
+    dim_mu_6_bar_list = list(dim_mu_6_bar_list)
+    dim_mu_8_bar_list = list(dim_mu_8_bar_list)
 
     # Convert images to videos
     if cfg.OUTPUT.VIDEO_OUTPUT:
@@ -658,10 +698,10 @@ def main(args):
             mu_bar_0 TEXT,
             mu_bar_1 TEXT,
             mu_bar_2 TEXT,
-            kappa TEXT,
-            mu_0 TEXT,
-            mu_1 TEXT,
-            mu_2 TEXT,
+            dim_kappa_bar TEXT,
+            dim_mu_4_bar TEXT,
+            dim_mu_6_bar TEXT,
+            dim_mu_8_bar TEXT,
             Up TEXT,
             U TEXT
             )"""
@@ -683,10 +723,10 @@ def main(args):
             mu_bar_0,
             mu_bar_1,
             mu_bar_2,
-            kappa,
-            mu_0,
-            mu_1,
-            mu_2,
+            dim_kappa_bar,
+            dim_mu_4_bar,
+            dim_mu_6_bar,
+            dim_mu_8_bar,
             Up,
             U
             ) VALUES (
@@ -703,10 +743,10 @@ def main(args):
             '{json.dumps(list(mu_bar_0_list))}',
             '{json.dumps(list(mu_bar_1_list))}',
             '{json.dumps(list(mu_bar_2_list))}',
-            '{json.dumps(list(kappa_list))}',
-            '{json.dumps(list(mu_0_list))}',
-            '{json.dumps(list(mu_1_list))}',
-            '{json.dumps(list(mu_2_list))}',
+            '{json.dumps(list(dim_kappa_bar_list))}',
+            '{json.dumps(list(dim_mu_4_bar_list))}',
+            '{json.dumps(list(dim_mu_6_bar_list))}',
+            '{json.dumps(list(dim_mu_8_bar_list))}',
             '{json.dumps(list(Up_list))}',
             '{json.dumps(list(U_list))}'
             )"""
@@ -786,33 +826,33 @@ def main(args):
     ax[1, 3].set_xlabel('k')
     ax[1, 3].set_ylabel(r'$\overline{\mu}_2$')
 
-    log.debug("Plotting \\kappa...")
-    ax[2, 0].plot(k_list, kappa_list, 'k-')
-    ax[2, 0].plot([k_list[0]], [kappa_list[0]], 'bo')
-    ax[2, 0].plot([k_list[-1]], [kappa_list[-1]], 'ro')
+    log.debug("Plotting dimension of \\kappa...")
+    ax[2, 0].plot(k_list, dim_kappa_bar_list, 'k-')
+    ax[2, 0].plot([k_list[0]], [dim_kappa_bar_list[0]], 'bo')
+    ax[2, 0].plot([k_list[-1]], [dim_kappa_bar_list[-1]], 'ro')
     ax[2, 0].set_xlabel('k')
-    ax[2, 0].set_ylabel(r'$\kappa$')
+    ax[2, 0].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\kappa}$')
 
-    log.debug("Plotting \\mu_0...")
-    ax[2, 1].plot(k_list, mu_0_list, 'k-')
-    ax[2, 1].plot([k_list[0]], [mu_0_list[0]], 'bo')
-    ax[2, 1].plot([k_list[-1]], [mu_0_list[-1]], 'ro')
+    log.debug("Plotting dimension of \\mu_4...")
+    ax[2, 1].plot(k_list, dim_mu_4_bar_list, 'k-')
+    ax[2, 1].plot([k_list[0]], [dim_mu_4_bar_list[0]], 'bo')
+    ax[2, 1].plot([k_list[-1]], [dim_mu_4_bar_list[-1]], 'ro')
     ax[2, 1].set_xlabel('k')
-    ax[2, 1].set_ylabel(r'$\mu_0$')
+    ax[2, 1].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_4$')
 
-    log.debug("Plotting \\mu_1...")
-    ax[2, 2].plot(k_list, mu_1_list, 'k-')
-    ax[2, 2].plot([k_list[0]], [mu_1_list[0]], 'bo')
-    ax[2, 2].plot([k_list[-1]], [mu_1_list[-1]], 'ro')
+    log.debug("Plotting dimension of \\mu_6...")
+    ax[2, 2].plot(k_list, dim_mu_6_bar_list, 'k-')
+    ax[2, 2].plot([k_list[0]], [dim_mu_6_bar_list[0]], 'bo')
+    ax[2, 2].plot([k_list[-1]], [dim_mu_6_bar_list[-1]], 'ro')
     ax[2, 2].set_xlabel('k')
-    ax[2, 2].set_ylabel(r'$\mu_1$')
+    ax[2, 2].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_6$')
 
-    log.debug("Plotting \\mu_2...")
-    ax[2, 3].plot(k_list, mu_2_list, 'k-')
-    ax[2, 3].plot([k_list[0]], [mu_2_list[0]], 'bo')
-    ax[2, 3].plot([k_list[-1]], [mu_2_list[-1]], 'ro')
+    log.debug("Plotting dimension of \\mu_8...")
+    ax[2, 3].plot(k_list, dim_mu_8_bar_list, 'k-')
+    ax[2, 3].plot([k_list[0]], [dim_mu_8_bar_list[0]], 'bo')
+    ax[2, 3].plot([k_list[-1]], [dim_mu_8_bar_list[-1]], 'ro')
     ax[2, 3].set_xlabel('k')
-    ax[2, 3].set_ylabel(r'$\mu_2$')
+    ax[2, 3].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_8$')
 
     log.debug(
         "Plotting phase space curve \\overline{\\kappa} vs \\overline{{\\mu}}_0..."
@@ -850,33 +890,33 @@ def main(args):
     ax[3, 3].set_xlabel(r'$\overline{\mu}_0$')
     ax[3, 3].set_ylabel(r'$\overline{\mu}_2$')
 
-    log.debug("Plotting phase space curve \\kappa vs \\mu_0...")
-    ax[4, 0].plot(kappa_list, mu_0_list, 'k-')
-    ax[4, 0].plot([kappa_list[0]], [mu_0_list[0]], 'bo')
-    ax[4, 0].plot([kappa_list[-1]], [mu_0_list[-1]], 'ro')
+    log.debug("Plotting phase space curve \\kappa vs \\mu_4...")
+    ax[4, 0].plot(dim_kappa_bar_list, dim_mu_4_bar_list, 'k-')
+    ax[4, 0].plot([dim_kappa_bar_list[0]], [dim_mu_4_bar_list[0]], 'bo')
+    ax[4, 0].plot([dim_kappa_bar_list[-1]], [dim_mu_4_bar_list[-1]], 'ro')
     ax[4, 0].set_xlabel(r'$\kappa$')
-    ax[4, 0].set_ylabel(r'$\mu_0$')
+    ax[4, 0].set_ylabel(r'$\mu_4$')
 
-    log.debug("Plotting phase space curve \\kappa vs \\mu_1...")
-    ax[4, 1].plot(kappa_list, mu_1_list, 'k-')
-    ax[4, 1].plot([kappa_list[0]], [mu_1_list[0]], 'bo')
-    ax[4, 1].plot([kappa_list[-1]], [mu_1_list[-1]], 'ro')
+    log.debug("Plotting phase space curve \\kappa vs \\mu_6...")
+    ax[4, 1].plot(dim_kappa_bar_list, dim_mu_6_bar_list, 'k-')
+    ax[4, 1].plot([dim_kappa_bar_list[0]], [dim_mu_6_bar_list[0]], 'bo')
+    ax[4, 1].plot([dim_kappa_bar_list[-1]], [dim_mu_6_bar_list[-1]], 'ro')
     ax[4, 1].set_xlabel(r'$\kappa$')
-    ax[4, 1].set_ylabel(r'$\mu_1$')
+    ax[4, 1].set_ylabel(r'$\mu_6$')
 
-    log.debug("Plotting phase space curve \\mu_0 vs \\mu_1...")
-    ax[4, 2].plot(mu_0_list, mu_1_list, 'k-')
-    ax[4, 2].plot([mu_0_list[0]], [mu_1_list[0]], 'bo')
-    ax[4, 2].plot([mu_0_list[-1]], [mu_1_list[-1]], 'ro')
-    ax[4, 2].set_xlabel(r'$\mu_0$')
-    ax[4, 2].set_ylabel(r'$\mu_1$')
+    log.debug("Plotting phase space curve \\mu_4 vs \\mu_6...")
+    ax[4, 2].plot(dim_mu_4_bar_list, dim_mu_6_bar_list, 'k-')
+    ax[4, 2].plot([dim_mu_4_bar_list[0]], [dim_mu_6_bar_list[0]], 'bo')
+    ax[4, 2].plot([dim_mu_4_bar_list[-1]], [dim_mu_6_bar_list[-1]], 'ro')
+    ax[4, 2].set_xlabel(r'$\mu_4$')
+    ax[4, 2].set_ylabel(r'$\mu_6$')
 
-    log.debug("Plotting phase space curve \\mu_0 vs \\mu_2...")
-    ax[4, 3].plot(mu_0_list, mu_2_list, 'k-')
-    ax[4, 3].plot([mu_0_list[0]], [mu_2_list[0]], 'bo')
-    ax[4, 3].plot([mu_0_list[-1]], [mu_2_list[-1]], 'ro')
-    ax[4, 3].set_xlabel(r'$\mu_0$')
-    ax[4, 3].set_ylabel(r'$\mu_2$')
+    log.debug("Plotting phase space curve \\mu_4 vs \\mu_8...")
+    ax[4, 3].plot(dim_mu_4_bar_list, dim_mu_8_bar_list, 'k-')
+    ax[4, 3].plot([dim_mu_4_bar_list[0]], [dim_mu_8_bar_list[0]], 'bo')
+    ax[4, 3].plot([dim_mu_4_bar_list[-1]], [dim_mu_8_bar_list[-1]], 'ro')
+    ax[4, 3].set_xlabel(r'$\mu_4$')
+    ax[4, 3].set_ylabel(r'$\mu_8$')
 
     ax = ax.flatten()
     for i in range(len(ax)):
@@ -889,6 +929,43 @@ def main(args):
     plt.tight_layout()
     plt.savefig(output_dir / 'simulation.png')
     plt.close(fig)
+
+    # Plot the dimensions of the parameters on the same plot
+    fig, ax = plt.subplots()
+    # ax.plot(k_list,
+    #         dim_kappa_bar_list,
+    #         'k-',
+    #         label=r'$\mathrm{dim}_{k}\, \overline{\kappa}$')
+    # ax.plot([k_list[0]], [dim_kappa_bar_list[0]], 'bo')
+    # ax.plot([k_list[-1]], [dim_kappa_bar_list[-1]], 'ro')
+    ax.plot(k_list,
+            dim_mu_4_bar_list,
+            'r-',
+            label=r'$\mathrm{dim}_{k}\, \overline{\mu}_4$')
+    ax.plot([k_list[0]], [dim_mu_4_bar_list[0]], 'bo')
+    ax.plot([k_list[-1]], [dim_mu_4_bar_list[-1]], 'ro')
+    ax.plot(k_list,
+            dim_mu_6_bar_list,
+            'g-',
+            label=r'$\mathrm{dim}_{k}\, \overline{\mu}_6$')
+    ax.plot([k_list[0]], [dim_mu_6_bar_list[0]], 'bo')
+    ax.plot([k_list[-1]], [dim_mu_6_bar_list[-1]], 'ro')
+    ax.plot(k_list,
+            dim_mu_8_bar_list,
+            'b-',
+            label=r'$\mathrm{dim}_{k}\, \overline{\mu}_8$')
+    ax.plot([k_list[0]], [dim_mu_8_bar_list[0]], 'bo')
+    ax.plot([k_list[-1]], [dim_mu_8_bar_list[-1]], 'ro')
+    ax.set_xlabel('k')
+    ax.set_ylabel('-dim')
+    ax.ticklabel_format(axis='both',
+                        style='sci',
+                        scilimits=(0, 0),
+                        useMathText=True)
+    ax.set_yscale('symlog')
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(output_dir / 'simulation_dim_param.png')
 
     # Record the last expression
     kappa_bar = kappa_bar_list[-1]
