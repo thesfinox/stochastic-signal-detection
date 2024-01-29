@@ -292,12 +292,8 @@ def main(args):
         log.debug("Using the endpoint as energy scale...")
         width = e_scale.BY_ENDPOINT.WIDTH
         eps = e_scale.BY_ENDPOINT.EPSILON
-        if e_scale.BY_ENDPOINT.BY_WIDTH:
-            m2_top = width + eps
-            m2_bot = eps
-        else:
-            m2_top = 1 / (mp.max + width)
-            m2_bot = eps
+        m2_top = 1 / (mp.max + width)
+        m2_bot = eps
     elif e_scale.BY_MAX.ENABLED:
         log.debug("Using the maximum of the inverse MP as energy scale...")
         m2_top = 1 / mp.max
@@ -810,21 +806,21 @@ def main(args):
     ax[1, 1].plot([k_bar_list[0]], [mu_bar_0_list[0]], 'bo')
     ax[1, 1].plot([k_bar_list[-1]], [mu_bar_0_list[-1]], 'ro')
     ax[1, 1].set_xlabel('k')
-    ax[1, 1].set_ylabel(r'$\overline{\mu}_0$')
+    ax[1, 1].set_ylabel(r'$\overline{\mu}_4$')
 
     log.debug("Plotting \\overline{\\mu}_1...")
     ax[1, 2].plot(k_bar_list, mu_bar_1_list, 'k-')
     ax[1, 2].plot([k_bar_list[0]], [mu_bar_1_list[0]], 'bo')
     ax[1, 2].plot([k_bar_list[-1]], [mu_bar_1_list[-1]], 'ro')
     ax[1, 2].set_xlabel('k')
-    ax[1, 2].set_ylabel(r'$\overline{\mu}_1$')
+    ax[1, 2].set_ylabel(r'$\overline{\mu}_6$')
 
     log.debug("Plotting \\overline{\\mu}_2...")
     ax[1, 3].plot(k_bar_list, mu_bar_2_list, 'k-')
     ax[1, 3].plot([k_bar_list[0]], [mu_bar_2_list[0]], 'bo')
     ax[1, 3].plot([k_bar_list[-1]], [mu_bar_2_list[-1]], 'ro')
     ax[1, 3].set_xlabel('k')
-    ax[1, 3].set_ylabel(r'$\overline{\mu}_2$')
+    ax[1, 3].set_ylabel(r'$\overline{\mu}_8$')
 
     log.debug("Plotting dimension of \\kappa...")
     ax[2, 0].plot(k_list, dim_kappa_bar_list, 'k-')
@@ -861,7 +857,7 @@ def main(args):
     ax[3, 0].plot([kappa_bar_list[0]], [mu_bar_0_list[0]], 'bo')
     ax[3, 0].plot([kappa_bar_list[-1]], [mu_bar_0_list[-1]], 'ro')
     ax[3, 0].set_xlabel(r'$\overline{\kappa}$')
-    ax[3, 0].set_ylabel(r'$\overline{\mu}_0$')
+    ax[3, 0].set_ylabel(r'$\overline{\mu}_4$')
 
     log.debug(
         "Plotting phase space curve \\overline{\\kappa} vs \\overline{{\\mu}}_1..."
@@ -870,7 +866,7 @@ def main(args):
     ax[3, 1].plot([kappa_bar_list[0]], [mu_bar_1_list[0]], 'bo')
     ax[3, 1].plot([kappa_bar_list[-1]], [mu_bar_1_list[-1]], 'ro')
     ax[3, 1].set_xlabel(r'$\overline{\kappa}$')
-    ax[3, 1].set_ylabel(r'$\overline{\mu}_1$')
+    ax[3, 1].set_ylabel(r'$\overline{\mu}_6$')
 
     log.debug(
         "Plotting phase space curve \\overline{{\\mu}}_0 vs \\overline{{\\mu}}_1..."
@@ -878,8 +874,8 @@ def main(args):
     ax[3, 2].plot(mu_bar_0_list, mu_bar_1_list, 'k-')
     ax[3, 2].plot([mu_bar_0_list[0]], [mu_bar_1_list[0]], 'bo')
     ax[3, 2].plot([mu_bar_0_list[-1]], [mu_bar_1_list[-1]], 'ro')
-    ax[3, 2].set_xlabel(r'$\overline{\mu}_0$')
-    ax[3, 2].set_ylabel(r'$\overline{\mu}_1$')
+    ax[3, 2].set_xlabel(r'$\overline{\mu}_4$')
+    ax[3, 2].set_ylabel(r'$\overline{\mu}_6$')
 
     log.debug(
         "Plotting phase space curve \\overline{{\\mu}}_0 vs \\overline{{\\mu}}_2..."
@@ -887,36 +883,36 @@ def main(args):
     ax[3, 3].plot(mu_bar_0_list, mu_bar_2_list, 'k-')
     ax[3, 3].plot([mu_bar_0_list[0]], [mu_bar_2_list[0]], 'bo')
     ax[3, 3].plot([mu_bar_0_list[-1]], [mu_bar_2_list[-1]], 'ro')
-    ax[3, 3].set_xlabel(r'$\overline{\mu}_0$')
-    ax[3, 3].set_ylabel(r'$\overline{\mu}_2$')
+    ax[3, 3].set_xlabel(r'$\overline{\mu}_4$')
+    ax[3, 3].set_ylabel(r'$\overline{\mu}_8$')
 
     log.debug("Plotting phase space curve \\kappa vs \\mu_4...")
     ax[4, 0].plot(dim_kappa_bar_list, dim_mu_4_bar_list, 'k-')
     ax[4, 0].plot([dim_kappa_bar_list[0]], [dim_mu_4_bar_list[0]], 'bo')
     ax[4, 0].plot([dim_kappa_bar_list[-1]], [dim_mu_4_bar_list[-1]], 'ro')
-    ax[4, 0].set_xlabel(r'$\kappa$')
-    ax[4, 0].set_ylabel(r'$\mu_4$')
+    ax[4, 0].set_xlabel(r'$-\mathrm{dim}_{k}\, \overline{\kappa}$')
+    ax[4, 0].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_4$')
 
     log.debug("Plotting phase space curve \\kappa vs \\mu_6...")
     ax[4, 1].plot(dim_kappa_bar_list, dim_mu_6_bar_list, 'k-')
     ax[4, 1].plot([dim_kappa_bar_list[0]], [dim_mu_6_bar_list[0]], 'bo')
     ax[4, 1].plot([dim_kappa_bar_list[-1]], [dim_mu_6_bar_list[-1]], 'ro')
-    ax[4, 1].set_xlabel(r'$\kappa$')
-    ax[4, 1].set_ylabel(r'$\mu_6$')
+    ax[4, 1].set_xlabel(r'$-\mathrm{dim}_{k}\, \kappa$')
+    ax[4, 1].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_6$')
 
     log.debug("Plotting phase space curve \\mu_4 vs \\mu_6...")
     ax[4, 2].plot(dim_mu_4_bar_list, dim_mu_6_bar_list, 'k-')
     ax[4, 2].plot([dim_mu_4_bar_list[0]], [dim_mu_6_bar_list[0]], 'bo')
     ax[4, 2].plot([dim_mu_4_bar_list[-1]], [dim_mu_6_bar_list[-1]], 'ro')
-    ax[4, 2].set_xlabel(r'$\mu_4$')
-    ax[4, 2].set_ylabel(r'$\mu_6$')
+    ax[4, 2].set_xlabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_4$')
+    ax[4, 2].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_6$')
 
     log.debug("Plotting phase space curve \\mu_4 vs \\mu_8...")
     ax[4, 3].plot(dim_mu_4_bar_list, dim_mu_8_bar_list, 'k-')
     ax[4, 3].plot([dim_mu_4_bar_list[0]], [dim_mu_8_bar_list[0]], 'bo')
     ax[4, 3].plot([dim_mu_4_bar_list[-1]], [dim_mu_8_bar_list[-1]], 'ro')
-    ax[4, 3].set_xlabel(r'$\mu_4$')
-    ax[4, 3].set_ylabel(r'$\mu_8$')
+    ax[4, 3].set_xlabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_4$')
+    ax[4, 3].set_ylabel(r'$-\mathrm{dim}_{k}\, \overline{\mu}_8$')
 
     ax = ax.flatten()
     for i in range(len(ax)):
@@ -924,7 +920,8 @@ def main(args):
                                style='sci',
                                scilimits=(0, 0),
                                useMathText=True)
-        ax[i].set_yscale('symlog')
+        if i != 4:
+            ax[i].set_yscale('symlog')
 
     plt.tight_layout()
     plt.savefig(output_dir / 'simulation.png')
