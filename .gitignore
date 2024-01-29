@@ -3,14 +3,20 @@
 *.mp4
 *.pdf
 *.sqlite
+*_signal
+*trials*
+configs/*
+debug*
 docs/source/_build/*
 formulae*
+no_signal*
 output*
 pictures*
+ratio*
 result*
 sim_*
+strong_signal*
 visualization*
-*_signal
 
 # VSCode
 .vscode/
