@@ -1,0 +1,63 @@
+OUTPUT:
+  OUTPUT_DIR: "simulation_trials"
+  DB:
+    OUTPUT_FILE: "simulation_trials.sqlite"
+    TABLE: "simulation_trials"
+INPUT:
+  MATRIX:
+    ROWS: 5000
+    COLUMNS: 4000
+    SEED: 42
+  SIGNAL:
+    RATIO: 0.0
+    BY_DET:
+      ENABLED: False
+      RANK: 2500
+    BY_IMG:
+      ENABLED: True
+      FILE: "tigro.png"
+  BINNING:
+    BINS: 100
+    SMOOTHING: 1.0
+  E_SCALE:
+    BY_VALUE:
+      ENABLED: True
+      MIN: 0.001
+      MAX: 0.5
+    BY_MASS_SCALE:
+      ENABLED: False
+      WIDTH: 0.25
+    BY_ENDPOINT:
+      ENABLED: False
+      WIDTH: 0.10
+      EPSILON: 0.0005
+    SPIKES: False
+    BY_MAX:
+      ENABLED: False
+      EPSILON: 0.0005
+  INIT:
+    BY_TEMP:
+      ENABLED: False
+      T: 1.0
+      TC: 0.5
+    BY_PARAMS:
+      ENABLED: False
+      MU_0: -1.0
+      MU_1: 2.0
+      MU_2: 0.0
+      MU_3: 0.0
+    BY_INIT:
+      ENABLED: True
+      KAPPA_0: 0.0
+      MU_4: 1.0
+      MU_6: 5.0
+      MU_8: 0.0
+SIM:
+  SIGN: -1.0
+  INF: 0.0
+  SUP: 1.0
+  N_VALUES: 10000
+  N_STEPS: 3000
+  PERIODIC: False
+  IR_TO_UV: False
+  EIGEN_THRESH: 0.008
