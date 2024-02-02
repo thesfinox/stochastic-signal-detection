@@ -87,137 +87,27 @@ def main(args):
         raise ValueError('No valid initial conditions defined!')
     log.debug(f"Initial conditions:\nU' = {expr}\nU = {pot}")
 
-    # Define the bulk distribution
-    log.info('Defining the bulk distribution...')
-    matrix = cfg.INPUT.MATRIX
-    Z = create_bulk(rows=matrix.ROWS,
-                    columns=matrix.COLUMNS,
-                    random_state=matrix.SEED)
-
-    # Define the signal
-    log.info('Defining the signal distribution...')
-    signal = cfg.INPUT.SIGNAL
-    if signal.BY_DET.ENABLED:
-        log.debug("Using deterministic matrix...")
-        S = create_signal(rows=matrix.ROWS,
-                          columns=matrix.COLUMNS,
-                          rank=signal.BY_DET.RANK,
-                          random_state=matrix.SEED)
-    elif signal.BY_IMG.ENABLED:
-        log.debug("Using image as source of signal...")
-        image = Image.open(signal.BY_IMG.FILE)
-        image = image.convert('L')
-        image = image.resize(Z.shape[::-1])
-        S = 2 * (np.array(image) / 255.0) - 1
-    else:
-        raise ValueError('No valid signal defined!')
-
-    # Create the full distribution and compute the eigenvalues of the
-    # covariance matrix
-    X = Z + signal.RATIO * S
-    C = np.cov(X, rowvar=False)
-    log.debug(f'Covariance shape: {C.shape}')
-
-    # Plot the signal matrix
-    log.info("Plotting the signal matrix...")
-    fig, ax = plt.subplots()
-    ax.imshow(X, cmap='gray')
-    ax.grid(False)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    plt.tight_layout()
-    plt.savefig(output_dir / 'signal_matrix.png')
-    plt.close(fig)
-
-    # Compute the eigenvalues of the signal and background separately
-    Cz = np.cov(Z, rowvar=False)
-    Cs = np.cov(signal.RATIO * S, rowvar=False)
-    Ez = np.linalg.eigvalsh(Cz)
-    Es = np.linalg.eigvalsh(Cs)
-
-    # Plot the two distributions
-    fig, ax = plt.subplots()
-    ax.hist(Ez,
-            bins=cfg.INPUT.BINNING.BINS,
-            density=True,
-            color='b',
-            alpha=0.5,
-            label='background')
-    ax.hist(Es,
-            bins=cfg.INPUT.BINNING.BINS,
-            density=True,
-            color='r',
-            alpha=0.5,
-            label='signal')
-    ax.set_xlabel(r'$\lambda$')
-    ax.set_ylabel(r'$\mu(\lambda)$')
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig(output_dir / 'eval_comp.png')
-    plt.close(fig)
-
-    # Select only the eigenvalues of the signal within the bulk region
-    Es = Es[Es <= Ez.max()]
-    fig, ax = plt.subplots()
-    ax.hist(Ez,
-            bins=cfg.INPUT.BINNING.BINS,
-            density=True,
-            color='b',
-            alpha=0.5,
-            label='background')
-    ax.hist(Es,
-            bins=cfg.INPUT.BINNING.BINS,
-            density=True,
-            color='r',
-            alpha=0.5,
-            label='signal')
-    ax.set_xlim(0.0, 1.05 * Ez.max())
-    ax.set_xlabel(r'$\lambda$')
-    ax.set_ylabel(r'$\mu(\lambda)$')
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig(output_dir / 'eval_comp_zoom.png')
-    plt.close(fig)
-
-    # Compute the eigenvalues of the covariance matrix
-    log.debug("Computing the eigenvalues of the full covariance matrix...")
-    E = np.linalg.eigvalsh(C)
-    log.debug(f"Eigenvalues:\nlambda_max = {E.max()}\nlambda_min = {E.min()}")
-
     # Define the MP distribution associated to the background
     log.info("Defining the MP distribution associated to the background...")
+    matrix = cfg.INPUT.MATRIX
     ratio = matrix.COLUMNS / matrix.ROWS
     mp = MarchenkoPastur(L=ratio)
 
     # Plot the distribution of the eigenvalues
     log.info("Plotting the distribution of the eigenvalues...")
-    x = np.linspace(0.0, 1.05 * E.max(), 2500)
+    x = np.linspace(0.0, 4.0, 2500)
     y = np.array([mp(x_) for x_ in x])
     fig, ax = plt.subplots()
-    ax.hist(E,
-            bins=cfg.INPUT.BINNING.BINS,
-            density=True,
-            color='b',
-            alpha=0.5,
-            label='eigenvalues')
     ax.plot(x, y, 'r-', label='MP')
     ax.set_xlabel(r'$\lambda$')
     ax.set_ylabel(r'$\mu(\lambda)$')
-    ax.legend()
     plt.tight_layout()
     plt.savefig(output_dir / 'mp_eigenvalues.png')
     plt.close(fig)
 
-    # Compute the inverse of the eigenvalues
-    log.info("Computing the inverse of the eigenvalues...")
-    E_inv = np.flip(1 / E)
-    log.debug(f"Momenta:\nk2_max = {E_inv.max()}\nk2_min = {E_inv.min()}")
-    E_inv -= E_inv.min()
-
     # Define the energy scale
     log.info("Defining the energy scale...")
     e_scale = cfg.INPUT.E_SCALE
-    force_origin = True
     if e_scale.BY_MASS_SCALE.ENABLED:
         log.debug("Using the mass scale with fixed width as energy scale...")
         width = e_scale.BY_MASS_SCALE.WIDTH
@@ -237,32 +127,17 @@ def main(args):
         log.debug("Using the maximum of the inverse MP as energy scale...")
         m2_top = 1 / mp.max
         m2_bot = 0.0
-    if not e_scale.SPIKES:
-        log.debug("Shifting spikes (PCA)...")
-        E_inv_spikes = np.where(np.diff(E_inv) >= cfg.SIM.EIGEN_THRESH)[0] + 1
-        E_inv_spikes = E_inv[E_inv_spikes]
-        E_inv_spikes = E_inv_spikes[E_inv_spikes < 10.0 * m2_top]
-        if len(E_inv_spikes) > 0:
-            shift = max(E_inv_spikes)
-            E_inv -= shift
-            force_origin = False
     else:
         raise ValueError('No valid energy scale defined!')
 
     # Define the distribution of the simulation
     log.info("Defining the distribution of the simulation...")
-    dist = InterpolateDistribution(bins=cfg.INPUT.BINNING.BINS**2)
-    dist = dist.fit(E_inv,
-                    n=2,
-                    s=cfg.INPUT.BINNING.SMOOTHING,
-                    force_origin=force_origin)
-    dist_th = TranslatedInverseMarchenkoPastur(L=ratio)
+    dist = TranslatedInverseMarchenkoPastur(L=ratio)
 
     # Plot the distribution (inverse)
     log.info("Plotting the distribution of the simulation...")
-    x = np.linspace(E_inv.min(), E_inv.max(), 2500)
+    x = np.linspace(0.0, 3.0, 2500)
     y = np.array([dist(x_) for x_ in x])
-    y_th = np.array([dist_th(x_) for x_ in x])
 
     # Redefine the mass scale if the simulations uses the max of the inverse
     # MP distribution as top energy scale
@@ -278,56 +153,30 @@ def main(args):
     )
 
     fig, ax = plt.subplots()
-    ax.hist(E_inv,
-            bins=cfg.INPUT.BINNING.BINS**2,
-            density=True,
-            color='b',
-            alpha=0.5,
-            label='eigenvalues')
-    ax.plot(x, y_th, 'r-', label='inverse MP')
-    ax.plot(x, y, 'k-', label='interpolated')
-    ax.set_xlim(-0.1, E_inv.max())
+    ax.plot(x, y, 'r-', label='inverse MP')
     ax.set_xlabel(r'$k^2$')
     ax.set_ylabel(r'$\rho$')
-    ax.legend()
     plt.tight_layout()
     plt.savefig(output_dir / 'mp_eigenvalues_inv.png')
     plt.close(fig)
 
-    x = np.linspace(E_inv.min(), 0.1 * E_inv.max(), 2500)
+    x = np.linspace(0.0, 1.0, 2500)
     y = np.array([dist(x_) for x_ in x])
-    y_th = np.array([dist_th(x_) for x_ in x])
 
     fig, ax = plt.subplots()
-    ax.hist(E_inv,
-            bins=cfg.INPUT.BINNING.BINS**2,
-            density=True,
-            color='b',
-            alpha=0.5,
-            label='eigenvalues')
-    ax.plot(x, y_th, 'r-', label='inverse MP')
-    ax.plot(x, y, 'k-', label='interpolated')
-    ax.set_xlim(-0.1, 0.1 * E_inv.max())
+    ax.plot(x, y, 'r-', label='inverse MP')
+    ax.set_xlim(-0.1, 1.0)
     ax.set_xlabel(r'$k^2$')
     ax.set_ylabel(r'$\rho$')
-    ax.legend()
     plt.tight_layout()
     plt.savefig(output_dir / 'mp_eigenvalues_inv_zoom.png')
     plt.close(fig)
 
     x = np.linspace(0.0, 1.0, 2500)
     y = np.array([dist(x_) for x_ in x])
-    y_th = np.array([dist_th(x_) for x_ in x])
 
     fig, ax = plt.subplots()
-    ax.hist(E_inv,
-            bins=cfg.INPUT.BINNING.BINS**2,
-            density=True,
-            color='b',
-            alpha=0.5,
-            label='eigenvalues')
-    ax.plot(x, y_th, 'r-', label='inverse MP')
-    ax.plot(x, y, 'k-', label='interpolated')
+    ax.plot(x, y, 'r-', label='inverse MP')
     ax.axvspan(m2_bot,
                m2_top,
                color='g',
@@ -336,7 +185,6 @@ def main(args):
     ax.set_xlim(-0.1, 1.0)
     ax.set_xlabel(r'$k^2$')
     ax.set_ylabel(r'$\rho$')
-    ax.legend()
     plt.tight_layout()
     plt.savefig(output_dir / 'mp_eigenvalues_inv_zoom2.png')
     plt.close(fig)

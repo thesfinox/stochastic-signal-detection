@@ -16,7 +16,6 @@ def get_cfg_defaults():
     _C.OUTPUT = CN()  # output parameters
 
     _C.OUTPUT.OUTPUT_DIR = 'simulation'
-    _C.OUTPUT.VIDEO_OUTPUT = True
 
     _C.OUTPUT.DB = CN()  # database parameters
 
@@ -83,6 +82,7 @@ def get_cfg_defaults():
     # Simulation parameters
     _C.SIM = CN()  # simulation parameters
 
+    _C.SIM.SIGN = 1.0
     _C.SIM.INF = 0.0
     _C.SIM.SUP = 1.0
     _C.SIM.N_VALUES = 1000
