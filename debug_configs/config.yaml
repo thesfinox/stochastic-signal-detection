@@ -5,9 +5,9 @@ OUTPUT:
     TABLE: "simulation_trials"
 INPUT:
   MATRIX:
-    ROWS: 5000
-    COLUMNS: 4000
-    SEED: 42
+    ROWS: 20000
+    COLUMNS: 16000
+    SEED: 123
   SIGNAL:
     RATIO: 0.0
     BY_DET:
@@ -18,7 +18,7 @@ INPUT:
       FILE: "tigro.png"
   BINNING:
     BINS: 100
-    SMOOTHING: 1.0
+    SMOOTHING: 0.085
   E_SCALE:
     BY_VALUE:
       ENABLED: True
@@ -49,15 +49,15 @@ INPUT:
     BY_INIT:
       ENABLED: True
       KAPPA_0: 0.0
-      MU_4: 1.0
-      MU_6: 5.0
+      MU_4: 1.0e-6
+      MU_6: 1.0e-6
       MU_8: 0.0
 SIM:
   SIGN: -1.0
   INF: 0.0
   SUP: 1.0
-  N_VALUES: 10000
-  N_STEPS: 3000
+  N_VALUES: 1000
+  N_STEPS: 10000
   PERIODIC: False
   IR_TO_UV: False
   EIGEN_THRESH: 0.008
