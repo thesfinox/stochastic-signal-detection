@@ -10,7 +10,7 @@ import numpy as np
 from scipy.interpolate import splev, splrep
 from scipy.stats import gaussian_kde
 
-from .base import BaseDistribution
+from .base.base import BaseDistribution
 
 
 class SpecularReflection(BaseDistribution):
@@ -209,7 +209,7 @@ class InterpolateDistribution(BaseDistribution):
 
     def fit(self,
             data: Iterable[float],
-            n: int = 1,
+            k: int = 1,
             s: float = 0.01,
             force_origin: bool = False,
             epsilon: float = 1.e-9) -> 'InterpolateDistribution':
@@ -218,8 +218,8 @@ class InterpolateDistribution(BaseDistribution):
         ----------
         data : array_like
             The data to fit
-        n : int, optional
-            The degree of the interpolating polynomial (default is 1)
+        k : int, optional
+            The degree of the interpolating spline (default is 1). Ideally, only odd degrees should be used, especially for values :math:`0 < k < 6`
         s : float, optional
             The smoothing factor (default is 0.01)
         force_origin : bool, optional
@@ -247,7 +247,7 @@ class InterpolateDistribution(BaseDistribution):
             X = np.insert(X, 0, 0)
             Y = np.insert(Y, 0, 0)
 
-        self._spl = splrep(X, Y, k=n, s=s, per=False)
+        self._spl = splrep(X, Y, k=k, s=s, per=False)
 
         # Set the fitted status
         self.fitted = True
