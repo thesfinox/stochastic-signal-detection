@@ -4,11 +4,14 @@ Partial Differential Equations
 
 The PDE module contains the class for the differential equation encoding the behaviour of the renormalization group.
 """
+from typing import Optional
+
+import numpy as np
 from pde import PDEBase, ScalarField
 from pde.grids.boundaries.axes import BoundariesData
 from scipy.integrate import simpson
 
-from .base import BaseDistribution
+from .base.base import BaseDistribution
 
 
 class SSD(PDEBase):
@@ -19,6 +22,7 @@ class SSD(PDEBase):
                  noise: float = 0.0,
                  epsilon: float = 1.e-9,
                  sign: int = 1,
+                 uv_scale: Optional[float] = None,
                  bc: BoundariesData = 'auto_periodic_neumann'):
         """
         Parameters
@@ -31,6 +35,8 @@ class SSD(PDEBase):
             Small number to avoid division by zero (default is 1.e-9)
         sign : int
             Sign of the evolution rate (default is +1)
+        uv_scale : float
+            Energy scale chosen in the UV (default is None, e.g. if evolution starts in the IR)
         bc : BoundariesData
             Boundary conditions (default is 'auto_periodic_neumann')
 
@@ -43,10 +49,11 @@ class SSD(PDEBase):
         self.dist = dist
         self.epsilon = epsilon
         self.sign = float(int(sign > 0) - int(sign < 0))
+        self.uv_scale = uv_scale
         self.bc = bc
 
         # Collect the dimensions of the operators
-        self.dimUp_ = []
+        self.dimdU_ = []
         self.dimChi_ = []
 
         # Collect the operators
@@ -56,10 +63,42 @@ class SSD(PDEBase):
         self.mu_8_bar_ = []
 
         # Collect the fiels
-        self.Up_ = []
+        self.dU_ = []
 
         # Collect the energy scales
         self.k2_ = []
+
+    @property
+    def k2(self) -> float:
+        return np.array(self.k2_)
+
+    @property
+    def dU(self) -> float:
+        return np.array(self.dU_)
+
+    @property
+    def dimdU(self) -> float:
+        return np.array(self.dimdU_)
+
+    @property
+    def dimChi(self) -> float:
+        return np.array(self.dimChi_)
+
+    @property
+    def kappa_bar(self) -> float:
+        return np.array(self.kappa_bar_)
+
+    @property
+    def mu_4_bar(self) -> float:
+        return np.array(self.mu_4_bar_)
+
+    @property
+    def mu_6_bar(self) -> float:
+        return np.array(self.mu_6_bar_)
+
+    @property
+    def mu_8_bar(self) -> float:
+        return np.array(self.mu_8_bar_)
 
     @property
     def expression(self) -> str:
@@ -89,12 +128,19 @@ class SSD(PDEBase):
             The evolution rate of the field at the given time
         """
         # Get the coordinates
-        k2 = t
+        if self.uv_scale is None:
+            # When going from IR to UV, the energy scale is increasing towards
+            # the UV scale.
+            k2 = t
+        else:
+            # When going from UV to IR, the energy scale is decreasing towards
+            # the IR scale.
+            k2 = self.uv_scale - t
         chi = state.grid.axes_coords[0]
-        Up = state
+        dU = state
 
         # Store the fields and the energy scales
-        self.Up_.append(list(Up.data))
+        self.dU_.append(dU.data.copy())
         self.k2_.append(k2)
 
         # Store the operators:
@@ -102,55 +148,53 @@ class SSD(PDEBase):
         #  - mu_4_bar: derivative of Up at kappa_bar
         #  - mu_6_bar: second derivative of Up at kappa_bar
         #  - mu_8_bar: third derivative of Up at kappa_bar
-        grad = Up.gradient(bc=self.bc)[0]
-        grad2 = grad.gradient(bc=self.bc)[0]
-        grad3 = grad2.gradient(bc=self.bc)[0]
+        grad = dU.gradient(bc=self.bc)[0]
+        grad2 = dU.laplace(bc=self.bc)
+        grad3 = grad.laplace(bc=self.bc)
 
-        zero = (Up.data[3:] >= 0.0).argmax() + 3
+        zero = (dU.data[3:] >= 0.0).argmax() + 3
         kappa_bar = chi[zero]
         self.kappa_bar_.append(kappa_bar)
-        mu_4_bar = round(grad.data[zero], 3)
+        mu_4_bar = grad.data[zero]
         self.mu_4_bar_.append(mu_4_bar)
-        mu_6_bar = round(grad2.data[zero] / 2.0, 3)
+        mu_6_bar = grad2.data[zero] / 2.0
         self.mu_6_bar_.append(mu_6_bar)
-        mu_8_bar = round(grad3.data[zero] / 6.0, 3)
+        mu_8_bar = grad3.data[zero] / 6.0
         self.mu_8_bar_.append(mu_8_bar)
 
-        # Compute constants
-        _I = self.dist.integrate(0, k2)[0]
-        _R = _I / (self.dist(k2) + self.epsilon)
-
-        _dimUp = _R / (k2 + self.epsilon)
-        _dimChi = 2 - _dimUp * (k2 * self.dist.grad(k2) + 2)
-
-        # Store the dimensions
-        self.dimUp_.append(_dimUp)
+        # Compute the constants
+        # N.B.: see the comments for the integration and the energy scales.
+        if self.uv_scale is None:
+            # When going from IR to UV, we use the distribution as it is. Hence,
+            # there is no need to inverse the integration or the gradient.
+            _I = self.dist.integrate(0, t)[0]
+            _grad = self.dist.grad(t)
+        else:
+            # When going from UV to IR, we take the specular reflection of the
+            # distribution. Hence, we need to reverse the integration to go
+            # from the scale to the max energy scale. Moreove, the sign of the
+            # gradient is also reversed.
+            _I = self.dist.integrate(t, self.uv_scale)[0]
+            _grad = -self.dist.grad(t)
+        _dimdU = _I / (k2 * self.dist(t) + self.epsilon)
+        _dimChi = 2 - _dimdU * (k2 * _grad / self.dist(t) + 2)
+        self.dimdU_.append(_dimdU)
         self.dimChi_.append(_dimChi)
 
-        # Compute the derivatives
-        grad = Up.gradient(bc=self.bc)[0]
-        grad2 = grad.gradient(bc=self.bc)[0]
+        # Compute the evolution
+        C1 = - 1 / (k2 + self.epsilon)  # dtau/dk2 * (-dimUp)
+        C2_1 = 2*self.dist(t)/(_I + self.epsilon)  # dtau/dk2 * dimChi (p.1)
+        C2_2 = - _grad/(self.dist(t) + self.epsilon)  # dtau/dk2 * dimChi (p.2)
+        C2_3 = -2/(k2 + self.epsilon)  # dtau/dk2 * dimChi (p.3)
+        C2 = C2_1 * C2_2 * C2_3
+        C3 = -2*self.dist(t)/(_I + self.epsilon)  # dtaudk2 * (-2)
 
-        # Prefactor
-        pref = 1 / (_R + self.epsilon)
+        _mu2 = dU + 2 * chi * grad
+        P1 = C1 * dU
+        P2 = C2 * chi * grad
+        P3 = C3 * (3*dU + 2*chi*grad2) / (1 + _mu2)**2
 
-        # Compute auxiliary quantities
-        block = chi * grad
-        block2 = chi * grad2
-
-        # Compute the adimensional mass
-        mu2 = Up + 2*block
-
-        # Sum the components (first term)
-        Q1 = -_dimUp * Up + _dimChi*block
-
-        # Second term
-        num = 3*grad + 2*block2
-        den = (1 + mu2**2)**2
-        Q2 = -2 * num / (den + self.epsilon)
-
-        # Compute the final result
-        result = self.sign * pref * (Q1+Q2)
+        result = self.sign * (P1 + P2 + P3)
         result.label = 'SSD'
 
         return result
