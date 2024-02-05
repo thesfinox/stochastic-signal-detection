@@ -20,7 +20,8 @@ from scipy.interpolate import splev, splrep
 from yacs.config import CfgNode as CN
 
 from ssd.base.base import BaseDistribution
-from ssd.distributions import (InterpolateDistribution, MarchenkoPastur,
+from ssd.distributions import (InterpolateDistribution,
+                               MarchenkoPastur,
                                SpecularReflection,
                                TranslatedInverseMarchenkoPastur)
 from ssd.ssd import SSD
@@ -52,8 +53,8 @@ def nan_to_num(x: np.ndarray) -> np.ndarray:
             return nan_to_num(x)
         for i in range(2, len(x)):
             if np.isnan(x[i]):
-                slope = x[i-1] - x[i-2]
-                x[i] = x[i-1] + slope
+                slope = x[i - 1] - x[i - 2]
+                x[i] = x[i - 1] + slope
     return x
 
 
@@ -79,7 +80,11 @@ def fit_spline(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return splev(x, tck)
 
 
-def get_configuration(config: str, arguments: List[str], pprint_config: bool, log: Optional[Union[str, Path]]) -> Tuple[CN,logging.Logger]:
+def get_configuration(
+        config: str,
+        arguments: List[str],
+        pprint_config: bool,
+        log: Optional[Union[str, Path]]) -> Tuple[CN, logging.Logger]:
     """
     Create the configuration and the logger.
 
@@ -107,7 +112,7 @@ def get_configuration(config: str, arguments: List[str], pprint_config: bool, lo
 
     log = logger(log)
 
-    return cfg,log
+    return cfg, log
 
 
 def get_output_directory(cfg: CN, log: logging.Logger) -> Path:
@@ -194,7 +199,10 @@ def get_initial_expression(cfg: CN, log: logging.Logger) -> str:
     return expr
 
 
-def create_data(cfg: CN, log: logging.Logger) -> Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], Tuple[CN, CN]]:
+def create_data(
+    cfg: CN, log: logging.Logger
+) -> Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], Tuple[CN,
+                                                                        CN]]:
     """
     Create the data and noise distributions.
 
@@ -245,10 +253,16 @@ def create_data(cfg: CN, log: logging.Logger) -> Tuple[Tuple[np.ndarray, np.ndar
     C = np.cov(X, rowvar=False)
     log.debug(f'Covariance shape: {C.shape}')
 
-    return (Z,S,X,C),(matrix,signal)
+    return (Z, S, X, C), (matrix, signal)
 
 
-def plot_distributions(cfg: CN, log: logging.Logger, output_dir: Path, Z: np.ndarray, S: np.ndarray, X: np.ndarray, signal: CN) -> None:
+def plot_distributions(cfg: CN,
+                       log: logging.Logger,
+                       output_dir: Path,
+                       Z: np.ndarray,
+                       S: np.ndarray,
+                       X: np.ndarray,
+                       signal: CN) -> None:
     """
     Plot the distributions of the background, the signal, etc.
 
@@ -352,7 +366,12 @@ def compute_eigenvalues(log: logging.Logger, C: np.ndarray) -> np.ndarray:
     return E
 
 
-def mp_distribution(cfg: CN, log: logging.Logger, output_dir: Path, matrix: CN, E: Optional[np.ndarray] = None) -> Tuple[float, MarchenkoPastur]:
+def mp_distribution(
+        cfg: CN,
+        log: logging.Logger,
+        output_dir: Path,
+        matrix: CN,
+        E: Optional[np.ndarray] = None) -> Tuple[float, MarchenkoPastur]:
     """
     Build the Marchenko-Pastur distribution and plot it (against the empirical spectrum, if available).
 
@@ -400,7 +419,7 @@ def mp_distribution(cfg: CN, log: logging.Logger, output_dir: Path, matrix: CN, 
     plt.tight_layout()
     plt.savefig(output_dir / 'mp_eigenvalues.png')
     plt.close(fig)
-    return ratio,mp
+    return ratio, mp
 
 
 def inverse_spectrum(log: logging.Logger, E: np.ndarray) -> np.ndarray:
@@ -426,7 +445,12 @@ def inverse_spectrum(log: logging.Logger, E: np.ndarray) -> np.ndarray:
     return E_inv
 
 
-def energy_scale(cfg: CN, log: logging.Logger, mp: MarchenkoPastur, E_inv: Optional[np.ndarray] = None) -> Tuple[Union[None, np.ndarray], Tuple[float, float], CN, bool]:
+def energy_scale(
+    cfg: CN,
+    log: logging.Logger,
+    mp: MarchenkoPastur,
+    E_inv: Optional[np.ndarray] = None
+) -> Tuple[Union[None, np.ndarray], Tuple[float, float], CN, bool]:
     """
     Define the energy scale of the simulation.
 
@@ -494,10 +518,20 @@ def energy_scale(cfg: CN, log: logging.Logger, mp: MarchenkoPastur, E_inv: Optio
             E_inv -= shift
             force_origin = False
 
-    return E_inv, (m2_bot, m2_top), e_scale,force_origin
+    return E_inv, (m2_bot, m2_top), e_scale, force_origin
 
 
-def simulation_distribution(cfg: CN, log: logging.Logger, output_dir: Path, ratio: float, e_scale: CN, m2_bot: float, m2_top: float, force_origin: bool = False, E_inv: Optional[np.ndarray] = None)-> Tuple[Tuple[float, float], BaseDistribution]:
+def simulation_distribution(
+    cfg: CN,
+    log: logging.Logger,
+    output_dir: Path,
+    ratio: float,
+    e_scale: CN,
+    m2_bot: float,
+    m2_top: float,
+    force_origin: bool = False,
+    E_inv: Optional[np.ndarray] = None
+) -> Tuple[Tuple[float, float], BaseDistribution]:
     """
     Define the distribution used in the simulation.
 
@@ -662,12 +696,17 @@ def simulation_distribution(cfg: CN, log: logging.Logger, output_dir: Path, rati
         plt.close(fig)
 
     if E_inv is not None:
-        return (m2_bot,m2_top),dist
+        return (m2_bot, m2_top), dist
     else:
-        return (m2_bot,m2_top),dist_th
+        return (m2_bot, m2_top), dist_th
 
 
-def simulation(cfg: CN, log: logging.Logger, expr: str, m2_bot: float, m2_top: float, dist: BaseDistribution) -> SSD:
+def simulation(cfg: CN,
+               log: logging.Logger,
+               expr: str,
+               m2_bot: float,
+               m2_top: float,
+               dist: BaseDistribution) -> SSD:
     """
     Run the simulation.
 
@@ -694,7 +733,7 @@ def simulation(cfg: CN, log: logging.Logger, expr: str, m2_bot: float, m2_top: f
     log.info("Defining the grid of the simulation...")
     dx = (cfg.SIM.SUP - cfg.SIM.INF) / cfg.SIM.N_VALUES
     grid = CartesianGrid(
-                [[cfg.SIM.INF-dx/2.0, cfg.SIM.SUP+dx/2.0]],
+        [[cfg.SIM.INF - dx/2.0, cfg.SIM.SUP + dx/2.0]],
         [cfg.SIM.N_VALUES],
         periodic=cfg.SIM.PERIODIC,
     )
@@ -719,7 +758,10 @@ def simulation(cfg: CN, log: logging.Logger, expr: str, m2_bot: float, m2_top: f
     return eq
 
 
-def collect_values(cfg: CN, log: logging.Logger, eq: SSD) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
+def collect_values(
+    cfg: CN, log: logging.Logger, eq: SSD
+) -> Tuple[Tuple[np.ndarray, np.ndarray],
+           Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
     """
     Collect important quantities from the simulation.
 
@@ -765,10 +807,21 @@ def collect_values(cfg: CN, log: logging.Logger, eq: SSD) -> Tuple[Tuple[np.ndar
         dim_mu_4_bar = fit_spline(eq.k2, dim_mu_4_bar)
         dim_mu_6_bar = fit_spline(eq.k2, dim_mu_6_bar)
         dim_mu_8_bar = fit_spline(eq.k2, dim_mu_8_bar)
-    return (dU_start,dU_end),(dim_kappa_bar,dim_mu_4_bar,dim_mu_6_bar,dim_mu_8_bar)
+    return (dU_start,
+            dU_end), (dim_kappa_bar, dim_mu_4_bar, dim_mu_6_bar, dim_mu_8_bar)
 
 
-def collect_sqlite(cfg: CN, log: logging.Logger, m2_bot: float, m2_top: float, eq: SSD, dU_start: np.ndarray, dU_end: np.ndarray, dim_kappa_bar: np.ndarray, dim_mu_4_bar:np.ndarray, dim_mu_6_bar:np.ndarray, dim_mu_8_bar:np.ndarray)-> None:
+def collect_sqlite(cfg: CN,
+                   log: logging.Logger,
+                   m2_bot: float,
+                   m2_top: float,
+                   eq: SSD,
+                   dU_start: np.ndarray,
+                   dU_end: np.ndarray,
+                   dim_kappa_bar: np.ndarray,
+                   dim_mu_4_bar: np.ndarray,
+                   dim_mu_6_bar: np.ndarray,
+                   dim_mu_8_bar: np.ndarray) -> None:
     """
     Register all important quantities in a SQLite database.
 
@@ -883,7 +936,18 @@ def collect_sqlite(cfg: CN, log: logging.Logger, m2_bot: float, m2_top: float, e
         conn.close()
 
 
-def plot_results(cfg: CN, log: logging.Logger, output_dir: Path, ratio: float, m2_top: float, eq: SSD, dU_start:np.ndarray, dU_end:np.ndarray, dim_kappa_bar:np.ndarray, dim_mu_4_bar:np.ndarray, dim_mu_6_bar:np.ndarray, dim_mu_8_bar:np.ndarray):
+def plot_results(cfg: CN,
+                 log: logging.Logger,
+                 output_dir: Path,
+                 ratio: float,
+                 m2_top: float,
+                 eq: SSD,
+                 dU_start: np.ndarray,
+                 dU_end: np.ndarray,
+                 dim_kappa_bar: np.ndarray,
+                 dim_mu_4_bar: np.ndarray,
+                 dim_mu_6_bar: np.ndarray,
+                 dim_mu_8_bar: np.ndarray):
     """
     Plot the results to visualize the evolution.]
 
@@ -945,9 +1009,7 @@ def plot_results(cfg: CN, log: logging.Logger, output_dir: Path, ratio: float, m
         rf'$\overline{{\mathcal{{U}}}}^{{\prime}}[\overline{{{cfg.SIM.SUP}}}]$')
 
     log.debug("Plotting ratio of starting and ending points...")
-    ax[0, 3].plot(eq.k2,
-                  np.array(dU_end) / np.array(dU_start),
-                  'k-')
+    ax[0, 3].plot(eq.k2, np.array(dU_end) / np.array(dU_start), 'k-')
     ax[0, 3].plot([eq.k2[0]], [dU_end[0] / dU_start[0]], col_1)
     ax[0, 3].plot([eq.k2[-1]], [dU_end[-1] / dU_start[-1]], col_2)
     ax[0, 3].set_xlabel(r'$k^2$')
@@ -1137,10 +1199,11 @@ def plot_results(cfg: CN, log: logging.Logger, output_dir: Path, ratio: float, m
 
     # Plot the dimensions of the parameters using the MP distribution
     mp = MarchenkoPastur(L=ratio)
-    x = np.linspace(0.0, mp.max+0.05, 2500)
+    x = np.linspace(0.0, mp.max + 0.05, 2500)
     y = np.array([mp(x_) for x_ in x])
-    k2 = (1/mp.min) * (eq.k2 - eq.k2.min()) / (eq.k2.max() - eq.k2.min()) + (1/mp.max)
-    km2 = 1/k2
+    k2 = (1 / mp.min) * (eq.k2 - eq.k2.min()) / (eq.k2.max() - eq.k2.min()) + (
+        1 / mp.max)
+    km2 = 1 / k2
     fig, ax = plt.subplots()
     ax.plot(x, y, 'k-', label='MP')
     ax.set_xlabel(r'$\lambda$')
@@ -1167,7 +1230,7 @@ def plot_results(cfg: CN, log: logging.Logger, output_dir: Path, ratio: float, m
                         scilimits=(0, 0),
                         useMathText=True)
     ax.legend()
-    ax.set_xlim(-0.05, mp.max+0.05)
+    ax.set_xlim(-0.05, mp.max + 0.05)
     plt.tight_layout()
     plt.savefig(output_dir / 'simulation_dim_param_mp.png')
 

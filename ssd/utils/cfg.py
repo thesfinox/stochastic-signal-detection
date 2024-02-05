@@ -29,23 +29,23 @@ def logger(filename: Optional[Union[str, Path]]) -> logging.Logger:
     logger : logging.Logger
         Logger of the simulation.
     """
-    logger = logging.getLogger('SSD')
-    logger.setLevel(logging.DEBUG)
+    log = logging.getLogger('SSD')
+    log.setLevel(logging.DEBUG)
     form = '[%(asctime)s] %(levelname)s: %(message)s'
 
     # Create handlers
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.DEBUG)
     stream_handler.setFormatter(logging.Formatter(form))
-    logger.addHandler(stream_handler)
+    log.addHandler(stream_handler)
 
     if filename is not None:
         file_handler = logging.FileHandler(str(filename))
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(logging.Formatter(form))
-        logger.addHandler(file_handler)
+        log.addHandler(file_handler)
 
-    return logger
+    return log
 
 
 def header(config: str, cfg: CN) -> str:
@@ -65,7 +65,7 @@ def header(config: str, cfg: CN) -> str:
         Header of the simulation.
     """
     today = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    header = f"""\n
+    head = f"""\n
 #########################################
 #                                       #
 #   SSD - Stochastic Signal Detection   #
@@ -85,7 +85,7 @@ Configuration: {config}
 
 """
 
-    return header
+    return head
 
 
 def get_params(config: str = None, arguments: List[str] = None) -> CN:
@@ -119,10 +119,11 @@ def get_params(config: str = None, arguments: List[str] = None) -> CN:
     cfg.freeze()
 
     # Print the header
-    logger = logging.getLogger('SSD')
-    logger.info(header(config, cfg))
+    log = logging.getLogger('SSD')
+    log.info(header(config, cfg))
 
     return cfg
+
 
 def print_config(cfg: CN) -> None:
     """

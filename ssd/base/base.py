@@ -5,7 +5,7 @@ Base classes
 Base abstract classes for the distributions
 """
 from inspect import signature
-from typing import Tuple
+from typing import Any, Tuple
 
 import numpy as np
 from scipy.integrate import quad
@@ -30,11 +30,13 @@ class BaseDistribution:
         )
 
     @property
-    def max(self):
+    def max(self) -> Any:
+        """Return the maximum value of the distribution."""
         return None
 
     @property
-    def min(self):
+    def min(self) -> Any:
+        """Return the minimum value of the distribution."""
         return None
 
     def integrate(self,

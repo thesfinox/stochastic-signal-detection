@@ -60,6 +60,9 @@ class HistogramDistribution(BaseDistribution):
 
         # Set the number of bins
         self.bins = bins
+        self._hist = None
+        self._bins = None
+        self.fitted = False
 
     def fit(self, data: Iterable[float]) -> 'HistogramDistribution':
         """
@@ -206,6 +209,12 @@ class InterpolateDistribution(BaseDistribution):
 
         # Set the number of bins
         self.bins = bins
+        self._hist = None
+        self._bins = None
+        self._spl = None
+        self.fitted = False
+        self.force_origin = False
+        self.epsilon = 1.e-9
 
     def fit(self,
             data: Iterable[float],
@@ -307,6 +316,7 @@ class EmpiricalDistribution(BaseDistribution):
         self.bw_method = bw_method
 
         # Set the weights
+        self._kernel = None
         self.weights = weights
 
         # Set the fitted status

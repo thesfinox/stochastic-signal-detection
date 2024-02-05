@@ -11,10 +11,17 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 
 from ssd import __version__
-from ssd.utils.utils import (collect_sqlite, collect_values, energy_scale,
-                             get_configuration, get_initial_expression,
-                             get_output_directory, log_expr, mp_distribution,
-                             plot_results, simulation, simulation_distribution)
+from ssd.utils.utils import (collect_sqlite,
+                             collect_values,
+                             energy_scale,
+                             get_configuration,
+                             get_initial_expression,
+                             get_output_directory,
+                             log_expr,
+                             mp_distribution,
+                             plot_results,
+                             simulation,
+                             simulation_distribution)
 
 mpl.use('agg')
 mpl.rcParams['figure.figsize'] = (8, 6)
@@ -24,7 +31,6 @@ __author__ = 'Riccardo Finotello'
 __email__ = 'riccardo.finotello@cea.fr'
 __description__ = 'Simulation of the stochastic signal detection mechanism.'
 __epilog__ = 'For bug reports and info: ' + __author__ + ' <' + __email__ + '>'
-
 
 
 def main(a: argparse.Namespace) -> int | str:
@@ -52,19 +58,43 @@ def main(a: argparse.Namespace) -> int | str:
     eq = simulation(cfg, log, expr, m2_bot, m2_top, dist)
 
     # Collect important quantities
-    (dU_start, dU_end), (dim_kappa_bar, dim_mu_4_bar, dim_mu_6_bar, dim_mu_8_bar) = collect_values(cfg, log, eq)
+    (dU_start,
+     dU_end), (dim_kappa_bar, dim_mu_4_bar, dim_mu_6_bar,
+               dim_mu_8_bar) = collect_values(cfg, log, eq)
 
     # Add information to the sqlite database
-    collect_sqlite(cfg, log, m2_bot, m2_top, eq, dU_start, dU_end, dim_kappa_bar, dim_mu_4_bar, dim_mu_6_bar, dim_mu_8_bar)
+    collect_sqlite(cfg,
+                   log,
+                   m2_bot,
+                   m2_top,
+                   eq,
+                   dU_start,
+                   dU_end,
+                   dim_kappa_bar,
+                   dim_mu_4_bar,
+                   dim_mu_6_bar,
+                   dim_mu_8_bar)
 
     # Visualize the results
-    plot_results(cfg, log, output_dir, ratio, m2_top, eq, dU_start, dU_end, dim_kappa_bar, dim_mu_4_bar, dim_mu_6_bar, dim_mu_8_bar)
+    plot_results(cfg,
+                 log,
+                 output_dir,
+                 ratio,
+                 m2_top,
+                 eq,
+                 dU_start,
+                 dU_end,
+                 dim_kappa_bar,
+                 dim_mu_4_bar,
+                 dim_mu_6_bar,
+                 dim_mu_8_bar)
 
     # Record the last expression
     log_expr(log, eq)
 
     log.info("Done!")
     return 0
+
 
 if __name__ == '__main__':
 

@@ -9,7 +9,6 @@ from typing import Optional
 import numpy as np
 from pde import PDEBase, ScalarField
 from pde.grids.boundaries.axes import BoundariesData
-from scipy.integrate import simpson
 
 from .base.base import BaseDistribution
 
@@ -70,34 +69,42 @@ class SSD(PDEBase):
 
     @property
     def k2(self) -> float:
+        """Return the list of energy scales."""
         return np.array(self.k2_)
 
     @property
     def dU(self) -> float:
+        """Return the list of values of the derivative of the field."""
         return np.array(self.dU_)
 
     @property
     def dimdU(self) -> float:
+        """Return the list of values of the dimension of the derivative of the field."""
         return np.array(self.dimdU_)
 
     @property
     def dimChi(self) -> float:
+        """Return the list of values of the dimension of the field :math:`\chi`."""
         return np.array(self.dimChi_)
 
     @property
     def kappa_bar(self) -> float:
+        """Return the list of values of the first zero of the derivative of the field."""
         return np.array(self.kappa_bar_)
 
     @property
     def mu_4_bar(self) -> float:
+        """Return the list of values of the derivative of the field at the first zero (quartic coupling)."""
         return np.array(self.mu_4_bar_)
 
     @property
     def mu_6_bar(self) -> float:
+        """Return the list of values of the second derivative of the field at the first zero (sextic coupling)."""
         return np.array(self.mu_6_bar_)
 
     @property
     def mu_8_bar(self) -> float:
+        """Return the list of values of the third derivative of the field at the first zero (octic coupling)."""
         return np.array(self.mu_8_bar_)
 
     @property
@@ -182,19 +189,19 @@ class SSD(PDEBase):
         self.dimChi_.append(_dimChi)
 
         # Compute the evolution
-        C1 = - 1 / (k2 + self.epsilon)  # dtau/dk2 * (-dimUp)
-        C2_1 = 2*self.dist(t)/(_I + self.epsilon)  # dtau/dk2 * dimChi (p.1)
-        C2_2 = - _grad/(self.dist(t) + self.epsilon)  # dtau/dk2 * dimChi (p.2)
-        C2_3 = -2/(k2 + self.epsilon)  # dtau/dk2 * dimChi (p.3)
+        C1 = -1 / (k2 + self.epsilon)  # dtau/dk2 * (-dimUp)
+        C2_1 = 2 * self.dist(t) / (_I + self.epsilon)  # dtau/dk2 * dimChi (p.1)
+        C2_2 = -_grad / (self.dist(t) + self.epsilon)  # dtau/dk2 * dimChi (p.2)
+        C2_3 = -2 / (k2 + self.epsilon)  # dtau/dk2 * dimChi (p.3)
         C2 = C2_1 * C2_2 * C2_3
-        C3 = -2*self.dist(t)/(_I + self.epsilon)  # dtaudk2 * (-2)
+        C3 = -2 * self.dist(t) / (_I + self.epsilon)  # dtaudk2 * (-2)
 
-        _mu2 = dU + 2 * chi * grad
+        _mu2 = dU + 2*chi*grad
         P1 = C1 * dU
         P2 = C2 * chi * grad
         P3 = C3 * (3*dU + 2*chi*grad2) / (1 + _mu2)**2
 
-        result = self.sign * (P1 + P2 + P3)
+        result = self.sign * (P1+P2+P3)
         result.label = 'SSD'
 
         return result
