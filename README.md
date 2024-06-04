@@ -2,7 +2,7 @@
 
 [Harold Erbin](mailto:harold.erbin@cea.fr), [Riccardo Finotello](mailto:riccardo.finotello@cea.fr), [Bio Wahabou Kpera](mailto:wahaboukpera@gmail.com), [Vincent Lahoche](mailto:vincent.lahoche@cea.fr), [Dine Ousmane Samary](mailto:dine.ousmanesamary@cipma.uac.bj)
 
-[![arXiv](https://img.shields.io/badge/arxiv-2023.07499-red)](https://arxiv.org/abs/2310.07499)
+[![arXiv](https://img.shields.io/badge/arxiv-2310.07499-red)](https://arxiv.org/abs/2310.07499)
 [![github](https://img.shields.io/badge/github-stochastic--signal--detection-blue?logo=github)](https://github.com/thesfinox/stochastic-signal-detection)
 [![Documentation Status](https://readthedocs.org/projects/stochastic-signal-detection/badge/?version=latest)](https://stochastic-signal-detection.readthedocs.io/en/latest/)
 
