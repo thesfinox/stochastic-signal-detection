@@ -5,7 +5,7 @@ Abstract
     | `Harold Erbin <mailto:harold.erbin@cea.fr>`_, `Riccardo Finotello <mailto:riccardo.finotello@cea.fr>`_, `Bio Wahabou Kpera <mailto:wahaboukpera@gmail.com>`_, `Vincent Lahoche <mailto:vincent.lahoche@cea.fr>`_, `Dine Ousmane Samary <mailto:dine.ousmanesamary@cipma.uac.bj>`_
     | |arxiv| |github| |docs|
 
-.. |arxiv| image:: https://img.shields.io/badge/arxiv-2023.07499-red
+.. |arxiv| image:: https://img.shields.io/badge/arxiv-2310.07499-red
    :target: https://arxiv.org/abs/2310.07499
    :alt: arXiv.org
 
